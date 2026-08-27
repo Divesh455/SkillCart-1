@@ -58,7 +58,40 @@ const socialService = {
       formData
     );
   },
+  // ============================================================
+  // GET ALL USERS
+  // ============================================================
 
+  getAllUsers: async () => {
+    const token =
+      localStorage.getItem("token");
+
+    const response = await fetch(
+      "https://skillcart-auth.onrender.com/api/users",
+      {
+        method: "GET",
+        headers: {
+          ...(token
+            ? {
+              Authorization: `Bearer ${token}`,
+            }
+            : {}),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorText =
+        await response.text();
+
+      throw new Error(
+        errorText ||
+        `Failed to fetch users (${response.status})`
+      );
+    }
+
+    return response.json();
+  },
   // =====================================
   // LIKE POST
   // =====================================

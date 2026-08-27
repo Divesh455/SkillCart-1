@@ -3,60 +3,123 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 import {
-  Sparkles,
-  FileText,
   Check,
   Plus,
   Image as ImageIcon,
   Zap,
   Target,
-  ShieldCheck,
   ChevronRight,
-  Download,
+  X,
+  Globe,
+  Code2,
+  ExternalLink,
 } from "lucide-react";
 
 import AppHeader from "../../components/common/AppHeader";
 import Feed from "../../components/common/Feed";
 import JobDetailModal from "../ForYou/JobDetailModal";
 import CreatePostModal from "../../components/common/CreatePostModal";
-
+import socialService from "../../services/socialService";
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
 
-import resumeService from "../../services/resumeService";
 import jobService from "../../services/jobService";
 
 export default function HomePage() {
+  const [users, setUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] =
+    useState(true);
+  useEffect(() => {
+
+    const loadUsers = async () => {
+
+      try {
+
+        setLoadingUsers(true);
+
+        const data =
+          await socialService.getAllUsers();
+
+        console.log(
+          "ALL USERS:",
+          data
+        );
+
+        setUsers(
+          Array.isArray(data)
+            ? data
+            : data?.content || []
+        );
+
+      } catch (error) {
+
+        console.error(
+          "GET ALL USERS ERROR:",
+          error
+        );
+
+      } finally {
+
+        setLoadingUsers(false);
+
+      }
+    };
+
+    loadUsers();
+
+  }, []);
+
   // ============================================================
-  // AUTHENTICATED USER
+  // AUTH
   // ============================================================
 
   const { user } = useAuth();
 
+  // ============================================================
+  // APP / RESUME DATA
+  // ============================================================
+
   const {
-    targetJobTitle,
-    extractedSkills,
-    downloadUrl,
+    resumeId,
+    resumeData,
+    fetchResumeData,
   } = useApp();
 
   // ============================================================
-  // CREATE POST MODAL
+  // FETCH PARSED RESUME
+  // ============================================================
+
+  useEffect(() => {
+
+    if (resumeId) {
+      fetchResumeData();
+    } else {
+      const storedResumeId =
+        localStorage.getItem("resume_id");
+
+      if (storedResumeId) {
+        fetchResumeData();
+      }
+    }
+
+  }, [resumeId]);
+
+  // ============================================================
+  // PROFILE POPUP
+  // ============================================================
+
+  const [showProfile, setShowProfile] =
+    useState(false);
+
+  // ============================================================
+  // CREATE POST
   // ============================================================
 
   const [isCreatePostOpen, setIsCreatePostOpen] =
     useState(false);
 
-  // ============================================================
-  // NEWLY CREATED POST
-  //
-  // We keep the post returned by the backend locally.
-  //
-  // This is important because Ayush's current FeedService
-  // can return an empty feed when the user follows nobody.
-  // We are NOT changing the backend.
-  // ============================================================
-
-  const [newPost, setNewPost] = useState(null);
+  const [newPost, setNewPost] =
+    useState(null);
 
   // ============================================================
   // JOB SIDEBAR
@@ -97,46 +160,35 @@ export default function HomePage() {
   ]);
 
   // ============================================================
-  // TOGGLE DAILY GOAL
+  // TOGGLE GOAL
   // ============================================================
 
   const toggleGoal = (id) => {
+
     setGoals((previousGoals) =>
       previousGoals.map((goal) =>
         goal.id === id
           ? {
-              ...goal,
-              done: !goal.done,
-            }
+            ...goal,
+            done: !goal.done,
+          }
           : goal
       )
     );
   };
 
   // ============================================================
-  // USER SKILLS
-  // ============================================================
-
-  const userSkills =
-    extractedSkills?.length > 0
-      ? extractedSkills.slice(0, 5)
-      : [
-          "React",
-          "TypeScript",
-          "Node.js",
-          "System Design",
-          "GraphQL",
-        ];
-
-  // ============================================================
-  // FETCH FEATURED JOBS
+  // FETCH JOBS
   // ============================================================
 
   useEffect(() => {
+
     let isMounted = true;
 
     const fetchTopJobs = async () => {
+
       try {
+
         setLoadingJobs(true);
 
         const response =
@@ -149,16 +201,21 @@ export default function HomePage() {
           isMounted &&
           response?.items
         ) {
+
           setFeaturedJobs(
             response.items.slice(0, 3)
           );
         }
+
       } catch (error) {
+
         console.warn(
-          "Could not fetch top jobs for sidebar:",
+          "Could not fetch top jobs:",
           error
         );
+
       } finally {
+
         if (isMounted) {
           setLoadingJobs(false);
         }
@@ -170,19 +227,15 @@ export default function HomePage() {
     return () => {
       isMounted = false;
     };
+
   }, []);
 
   // ============================================================
   // POST CREATED
-  //
-  // CreatePostModal sends the real response returned by:
-  //
-  // POST /api/social/posts
-  //
-  // We save that response in HomePage.
   // ============================================================
 
   const handlePostCreated = (createdPost) => {
+
     console.log(
       "HOME PAGE - CREATED POST:",
       createdPost
@@ -196,7 +249,7 @@ export default function HomePage() {
   };
 
   // ============================================================
-  // CLOSE CREATE POST MODAL
+  // CLOSE CREATE POST
   // ============================================================
 
   const handleCloseCreatePost = () => {
@@ -213,17 +266,102 @@ export default function HomePage() {
     ).length;
 
   // ============================================================
-  // USER AVATAR
+  // USERNAME
   // ============================================================
+
+  const getUsernameFromToken = () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        return "User";
+      }
+
+      const payload = JSON.parse(
+        atob(token.split(".")[1])
+      );
+
+      return (
+        payload?.sub ||
+        payload?.username ||
+        "User"
+      );
+
+    } catch (error) {
+      console.error(
+        "Could not read username from token:",
+        error
+      );
+
+      return "User";
+    }
+  };
 
   const username =
     user?.username ||
-    "Career Seeker";
+    getUsernameFromToken();
 
   const avatarText =
     username
-      .substring(0, 2)
+      .charAt(0)
       .toUpperCase();
+
+  // ============================================================
+  // PARSED RESUME DATA
+  // ============================================================
+
+  const parsedName =
+    resumeData?.name ||
+    username;
+
+  const contact =
+    resumeData?.contact || {};
+
+  const linkedin =
+    contact?.linkedin || "";
+
+  const portfolio =
+    contact?.portfolio || "";
+
+  // ============================================================
+  // MAKE URL COMPLETE
+  // ============================================================
+
+  const makeFullUrl = (url) => {
+
+    if (!url) {
+      return "";
+    }
+
+    if (
+      url.startsWith("http://") ||
+      url.startsWith("https://")
+    ) {
+      return url;
+    }
+
+    return `https://${url}`;
+  };
+
+  const linkedinUrl =
+    makeFullUrl(linkedin);
+
+  const portfolioUrl =
+    makeFullUrl(portfolio);
+
+  // ============================================================
+  // EXTRACT ALL SKILLS
+  // ============================================================
+
+  const parsedSkills =
+    Array.isArray(resumeData?.skills)
+      ? resumeData.skills.flatMap(
+        (category) =>
+          Array.isArray(category?.skills)
+            ? category.skills
+            : []
+      )
+      : [];
 
   // ============================================================
   // RENDER
@@ -242,6 +380,7 @@ export default function HomePage() {
         selection:text-[#19714e]
       "
     >
+
       {/* ======================================================
           HEADER
       ====================================================== */}
@@ -249,7 +388,7 @@ export default function HomePage() {
       <AppHeader />
 
       {/* ======================================================
-          MAIN CONTENT
+          MAIN
       ====================================================== */}
 
       <main
@@ -265,8 +404,9 @@ export default function HomePage() {
           space-y-6
         "
       >
+
         {/* ====================================================
-            THREE COLUMN LAYOUT
+            THREE COLUMN
         ==================================================== */}
 
         <div
@@ -278,6 +418,7 @@ export default function HomePage() {
             items-start
           "
         >
+
           {/* ==================================================
               LEFT SIDEBAR
           ================================================== */}
@@ -307,7 +448,10 @@ export default function HomePage() {
               scrollbar-none
             "
           >
-            {/* PROFILE CARD */}
+
+            {/* ==================================================
+                PROFILE CARD
+            ================================================== */}
 
             <div
               className="
@@ -317,11 +461,11 @@ export default function HomePage() {
                 rounded-3xl
                 overflow-hidden
                 shadow-xs
-                hover:shadow-xl
-                hover:border-[#19714e]/40
-                transition-all
               "
             >
+
+              {/* COVER */}
+
               <div
                 className="
                   h-20
@@ -330,35 +474,29 @@ export default function HomePage() {
                   via-[#19714e]
                   to-teal-600
                   relative
-                  overflow-hidden
                 "
-              >
-                <div
-                  className="
-                    absolute
-                    right-2
-                    top-2
-                    text-[#b9ef84]/40
-                    text-xs
-                    font-mono
-                    font-bold
-                  "
-                >
-                  PRO
-                </div>
-              </div>
+              />
+
+              {/* PROFILE */}
 
               <div
                 className="
                   px-5
                   pb-5
-                  pt-0
                   relative
                 "
               >
-                {/* Avatar */}
 
-                <div
+                {/* AVATAR */}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowProfile(
+                      (previous) =>
+                        !previous
+                    )
+                  }
                   className="
                     w-16
                     h-16
@@ -377,245 +515,370 @@ export default function HomePage() {
                     -mt-8
                     shadow-md
                     font-['Space_Grotesk']
+                    cursor-pointer
+                    hover:scale-105
+                    transition-transform
                   "
+                  title="View profile"
                 >
                   {avatarText}
-                </div>
+                </button>
 
-                {/* Username */}
+                {/* USERNAME */}
 
-                <h3
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowProfile(
+                      (previous) =>
+                        !previous
+                    )
+                  }
                   className="
-                    font-bold
-                    text-base
-                    text-[#12221d]
-                    font-['Space_Grotesk']
                     mt-2.5
+                    text-left
                     flex
                     items-center
-                    gap-1.5
-                  "
-                >
-                  <span>
-                    {username}
-                  </span>
-
-                  <ShieldCheck
-                    size={16}
-                    className="text-[#19714e]"
-                  />
-                </h3>
-
-                {/* Target Job */}
-
-                <p
-                  className="
-                    text-xs
-                    text-[#19714e]
-                    font-bold
-                    mt-0.5
-                    flex
-                    items-center
-                    gap-1
-                  "
-                >
-                  <Sparkles size={12} />
-
-                  <span>
-                    {targetJobTitle ||
-                      "Software Engineer"}
-                  </span>
-                </p>
-
-                {/* ATS SCORE */}
-
-                <div
-                  className="
-                    mt-4
-                    p-3
-                    rounded-2xl
-                    bg-[#f7faf8]
-                    border
-                    border-[#dfe7e2]
-                    space-y-2
-                  "
-                >
-                  <div
-                    className="
-                      flex
-                      items-center
-                      justify-between
-                      text-xs
-                      font-bold
-                    "
-                  >
-                    <span className="text-[#68756f]">
-                      ATS Match Score
-                    </span>
-
-                    <span className="text-[#19714e]">
-                      88%
-                    </span>
-                  </div>
-
-                  <div
-                    className="
-                      w-full
-                      h-2
-                      bg-[#dfe7e2]
-                      rounded-full
-                      overflow-hidden
-                    "
-                  >
-                    <div
-                      className="
-                        h-full
-                        bg-gradient-to-r
-                        from-[#123c2c]
-                        to-[#19714e]
-                        rounded-full
-                        w-[88%]
-                      "
-                    />
-                  </div>
-                </div>
-
-                {/* SKILLS */}
-
-                <div
-                  className="
-                    mt-3.5
-                    pt-3.5
-                    border-t
-                    border-[#dfe7e2]/70
+                    gap-2
+                    w-full
                   "
                 >
                   <span
                     className="
-                      text-[11px]
                       font-bold
-                      text-[#68756f]
-                      uppercase
-                      tracking-wider
-                      block
-                      mb-2
+                      text-base
+                      text-[#12221d]
+                      font-['Space_Grotesk']
                     "
                   >
-                    Top Verified Skills
+                    {username}
                   </span>
 
-                  <div
+                  <span
                     className="
-                      flex
-                      flex-wrap
-                      gap-1.5
+                      text-[10px]
+                      text-[#19714e]
+                      font-semibold
                     "
                   >
-                    {userSkills.map(
-                      (skill, index) => (
-                        <span
-                          key={`${skill}-${index}`}
-                          className="
-                            text-[10px]
-                            font-semibold
-                            bg-[#dff8eb]
-                            text-[#19714e]
-                            border
-                            border-[#19714e]/20
-                            px-2.5
-                            py-1
-                            rounded-xl
-                          "
-                        >
-                          {skill}
-                        </span>
-                      )
-                    )}
-                  </div>
-                </div>
+                    View profile
+                  </span>
+                </button>
 
-                {/* PROFILE ACTIONS */}
+                {/* ==================================================
+                    PROFILE DETAILS
+                ================================================== */}
 
-                <div
-                  className="
-                    mt-4
-                    flex
-                    flex-col
-                    gap-2
-                  "
-                >
-                  {downloadUrl && (
-                    <motion.button
-                      whileHover={{
-                        scale: 1.02,
-                      }}
-                      whileTap={{
-                        scale: 0.96,
-                      }}
-                      type="button"
-                      onClick={() =>
-                        resumeService.downloadResume(
-                          downloadUrl
-                        )
-                      }
-                      className="
-                        w-full
-                        py-2.5
-                        px-3
-                        rounded-2xl
-                        bg-[#19714e]
-                        hover:bg-[#123c2c]
-                        text-white
-                        text-xs
-                        font-bold
-                        flex
-                        items-center
-                        justify-center
-                        gap-1.5
-                        transition-all
-                        shadow-md
-                      "
-                    >
-                      <Download size={14} />
+                {showProfile && (
 
-                      <span>
-                        Download Resume
-                      </span>
-                    </motion.button>
-                  )}
-
-                  <Link
-                    to="/resume"
+                  <motion.div
+                    initial={{
+                      opacity: 0,
+                      height: 0,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      height: "auto",
+                    }}
                     className="
-                      w-full
-                      py-2.5
-                      px-3
-                      rounded-2xl
-                      bg-[#f7faf8]
-                      hover:bg-[#dff8eb]
-                      text-[#19714e]
-                      text-xs
-                      font-bold
-                      flex
-                      items-center
-                      justify-center
-                      gap-1.5
-                      transition-all
-                      border
+                      mt-4
+                      pt-4
+                      border-t
                       border-[#dfe7e2]
                     "
                   >
-                    <FileText size={14} />
 
-                    <span>
-                      Update Resume
-                    </span>
-                  </Link>
-                </div>
+                    {/* CLOSE */}
+
+                    <div
+                      className="
+                        flex
+                        items-center
+                        justify-between
+                        mb-4
+                      "
+                    >
+
+                      <h3
+                        className="
+                          font-bold
+                          text-sm
+                        "
+                      >
+                        Profile
+                      </h3>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowProfile(false)
+                        }
+                        className="
+                          p-1.5
+                          rounded-lg
+                          hover:bg-[#f7faf8]
+                          text-[#68756f]
+                        "
+                      >
+                        <X size={15} />
+                      </button>
+
+                    </div>
+
+                    {/* NAME */}
+
+                    <div className="mb-4">
+
+                      <p
+                        className="
+                          text-[10px]
+                          uppercase
+                          tracking-wider
+                          font-bold
+                          text-[#68756f]
+                          mb-1
+                        "
+                      >
+                        Name
+                      </p>
+
+                      <p
+                        className="
+                          text-sm
+                          font-bold
+                          text-[#12221d]
+                        "
+                      >
+                        {parsedName}
+                      </p>
+
+                    </div>
+
+                    {/* LINKEDIN */}
+
+                    {linkedinUrl && (
+
+                      <a
+                        href={linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="
+                          flex
+                          items-center
+                          gap-2
+                          p-2.5
+                          rounded-xl
+                          bg-[#f7faf8]
+                          border
+                          border-[#dfe7e2]
+                          hover:bg-[#dff8eb]
+                          hover:border-[#19714e]/30
+                          transition-all
+                          mb-2
+                        "
+                      >
+
+                        <ExternalLink
+                          size={16}
+                          className="text-[#19714e]"
+                        />
+
+                        <div
+                          className="
+                            min-w-0
+                            flex-1
+                          "
+                        >
+
+                          <p
+                            className="
+                              text-[10px]
+                              font-bold
+                              text-[#68756f]
+                            "
+                          >
+                            LinkedIn
+                          </p>
+
+                          <p
+                            className="
+                              text-xs
+                              font-semibold
+                              text-[#19714e]
+                              truncate
+                            "
+                          >
+                            {linkedin}
+                          </p>
+
+                        </div>
+
+                      </a>
+
+                    )}
+
+                    {/* PORTFOLIO */}
+
+                    {portfolioUrl && (
+
+                      <a
+                        href={portfolioUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="
+                          flex
+                          items-center
+                          gap-2
+                          p-2.5
+                          rounded-xl
+                          bg-[#f7faf8]
+                          border
+                          border-[#dfe7e2]
+                          hover:bg-[#dff8eb]
+                          hover:border-[#19714e]/30
+                          transition-all
+                          mb-4
+                        "
+                      >
+
+                        <Globe
+                          size={16}
+                          className="text-[#19714e]"
+                        />
+
+                        <div
+                          className="
+                            min-w-0
+                            flex-1
+                          "
+                        >
+
+                          <p
+                            className="
+                              text-[10px]
+                              font-bold
+                              text-[#68756f]
+                            "
+                          >
+                            Portfolio
+                          </p>
+
+                          <p
+                            className="
+                              text-xs
+                              font-semibold
+                              text-[#19714e]
+                              truncate
+                            "
+                          >
+                            {portfolio}
+                          </p>
+
+                        </div>
+
+                      </a>
+
+                    )}
+
+                    {/* SKILLS */}
+
+                    {parsedSkills.length > 0 && (
+
+                      <div>
+
+                        <div
+                          className="
+                            flex
+                            items-center
+                            gap-1.5
+                            mb-2
+                          "
+                        >
+
+                          <Code2
+                            size={14}
+                            className="text-[#19714e]"
+                          />
+
+                          <span
+                            className="
+                              text-[10px]
+                              uppercase
+                              tracking-wider
+                              font-bold
+                              text-[#68756f]
+                            "
+                          >
+                            Skills
+                          </span>
+
+                        </div>
+
+                        <div
+                          className="
+                            flex
+                            flex-wrap
+                            gap-1.5
+                          "
+                        >
+
+                          {parsedSkills.map(
+                            (skill, index) => (
+
+                              <span
+                                key={`${skill}-${index}`}
+                                className="
+                                  text-[10px]
+                                  font-semibold
+                                  bg-[#dff8eb]
+                                  text-[#19714e]
+                                  border
+                                  border-[#19714e]/20
+                                  px-2.5
+                                  py-1
+                                  rounded-xl
+                                "
+                              >
+                                {skill}
+                              </span>
+
+                            )
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    )}
+
+                    {/* NO RESUME DATA */}
+
+                    {!resumeData && (
+
+                      <p
+                        className="
+                          text-xs
+                          text-[#68756f]
+                          py-2
+                        "
+                      >
+                        Resume information is
+                        not available yet.
+                      </p>
+
+                    )}
+
+                  </motion.div>
+
+                )}
+
               </div>
+
             </div>
 
-            {/* DAILY GOALS */}
+            {/* ==================================================
+                DAILY GOALS
+            ================================================== */}
 
             <div
               className="
@@ -628,6 +891,7 @@ export default function HomePage() {
                 space-y-3
               "
             >
+
               <div
                 className="
                   flex
@@ -638,6 +902,7 @@ export default function HomePage() {
                   pb-2.5
                 "
               >
+
                 <h4
                   className="
                     font-bold
@@ -648,17 +913,16 @@ export default function HomePage() {
                     flex
                     items-center
                     gap-1.5
-                    font-['Space_Grotesk']
                   "
                 >
+
                   <Target
                     size={15}
                     className="text-[#19714e]"
                   />
 
-                  <span>
-                    Daily Goals
-                  </span>
+                  Daily Goals
+
                 </h4>
 
                 <span
@@ -675,10 +939,13 @@ export default function HomePage() {
                   {completedGoalsCount}/
                   {goals.length} Done
                 </span>
+
               </div>
 
               <div className="space-y-2">
+
                 {goals.map((goal) => (
+
                   <div
                     key={goal.id}
                     onClick={() =>
@@ -695,13 +962,13 @@ export default function HomePage() {
                       cursor-pointer
                       text-xs
 
-                      ${
-                        goal.done
-                          ? "bg-[#dff8eb]/50 border-[#19714e]/30 text-[#123c2c] font-semibold"
-                          : "bg-[#f7faf8] border-[#dfe7e2] text-[#68756f] hover:bg-white"
+                      ${goal.done
+                        ? "bg-[#dff8eb]/50 border-[#19714e]/30 text-[#123c2c] font-semibold"
+                        : "bg-[#f7faf8] border-[#dfe7e2] text-[#68756f] hover:bg-white"
                       }
                     `}
                   >
+
                     <div
                       className={`
                         w-4
@@ -713,19 +980,20 @@ export default function HomePage() {
                         shrink-0
                         border
 
-                        ${
-                          goal.done
-                            ? "bg-[#19714e] border-[#19714e] text-white"
-                            : "border-[#68756f]/50"
+                        ${goal.done
+                          ? "bg-[#19714e] border-[#19714e] text-white"
+                          : "border-[#68756f]/50"
                         }
                       `}
                     >
+
                       {goal.done && (
                         <Check
                           size={12}
                           strokeWidth={3}
                         />
                       )}
+
                     </div>
 
                     <span
@@ -737,10 +1005,15 @@ export default function HomePage() {
                     >
                       {goal.text}
                     </span>
+
                   </div>
+
                 ))}
+
               </div>
+
             </div>
+
           </motion.aside>
 
           {/* ==================================================
@@ -756,7 +1029,8 @@ export default function HomePage() {
               sm:pb-0
             "
           >
-            {/* CREATE POST TRIGGER */}
+
+            {/* CREATE POST */}
 
             <motion.div
               initial={{
@@ -789,6 +1063,7 @@ export default function HomePage() {
                 group
               "
             >
+
               <div
                 className="
                   flex
@@ -798,6 +1073,7 @@ export default function HomePage() {
                   min-w-0
                 "
               >
+
                 <div
                   className="
                     w-9
@@ -816,14 +1092,11 @@ export default function HomePage() {
                     justify-center
                     shrink-0
                     shadow-xs
-                    font-['Space_Grotesk']
                   "
                 >
-                  {user?.username
-                    ? user.username
-                        .charAt(0)
-                        .toUpperCase()
-                    : "U"}
+                  {username
+                    .charAt(0)
+                    .toUpperCase()}
                 </div>
 
                 <div
@@ -844,8 +1117,10 @@ export default function HomePage() {
                     truncate
                   "
                 >
-                  Start a post, share photos or job referrals...
+                  Start a post, share photos
+                  or job referrals...
                 </div>
+
               </div>
 
               <div
@@ -856,6 +1131,7 @@ export default function HomePage() {
                   shrink-0
                 "
               >
+
                 <button
                   type="button"
                   onClick={(event) => {
@@ -870,9 +1146,7 @@ export default function HomePage() {
                     text-[#19714e]
                     border
                     border-[#dfe7e2]
-                    transition-colors
                   "
-                  title="Add Photos"
                 >
                   <ImageIcon size={16} />
                 </button>
@@ -891,32 +1165,30 @@ export default function HomePage() {
                     text-white
                     text-xs
                     font-bold
-                    shadow-sm
-                    group-hover:bg-[#19714e]
-                    transition-colors
                     hidden
                     xs:inline-flex
                     items-center
                     gap-1.5
                   "
                 >
+
                   <Plus
                     size={15}
                     className="text-[#b9ef84]"
                   />
 
-                  <span>
-                    Create Post
-                  </span>
+                  Create Post
+
                 </button>
+
               </div>
+
             </motion.div>
 
-            {/* =================================================
-                DYNAMIC SOCIAL FEED
-            ================================================= */}
+            {/* FEED */}
 
             <Feed newPost={newPost} />
+
           </section>
 
           {/* ==================================================
@@ -936,6 +1208,7 @@ export default function HomePage() {
               scrollbar-none
             "
           >
+
             {/* LIVE JOB REFERRALS */}
 
             <div
@@ -949,6 +1222,7 @@ export default function HomePage() {
                 space-y-3
               "
             >
+
               <div
                 className="
                   flex
@@ -959,6 +1233,7 @@ export default function HomePage() {
                   border-[#dfe7e2]/70
                 "
               >
+
                 <h4
                   className="
                     font-bold
@@ -969,9 +1244,9 @@ export default function HomePage() {
                     flex
                     items-center
                     gap-1.5
-                    font-['Space_Grotesk']
                   "
                 >
+
                   <Zap
                     size={16}
                     className="
@@ -980,9 +1255,8 @@ export default function HomePage() {
                     "
                   />
 
-                  <span>
-                    Live Job Referrals
-                  </span>
+                  Live Job Referrals
+
                 </h4>
 
                 <Link
@@ -997,13 +1271,17 @@ export default function HomePage() {
                     gap-0.5
                   "
                 >
+
                   View All
 
                   <ChevronRight size={12} />
+
                 </Link>
+
               </div>
 
               {loadingJobs && (
+
                 <div
                   className="
                     py-6
@@ -1015,12 +1293,16 @@ export default function HomePage() {
                 >
                   Syncing live opportunities...
                 </div>
+
               )}
 
               {!loadingJobs &&
                 featuredJobs.length > 0 && (
+
                   <div className="space-y-2.5">
+
                     {featuredJobs.map((job) => (
+
                       <motion.div
                         whileHover={{
                           scale: 1.02,
@@ -1047,6 +1329,7 @@ export default function HomePage() {
                           space-y-2
                         "
                       >
+
                         <div
                           className="
                             flex
@@ -1055,13 +1338,14 @@ export default function HomePage() {
                             gap-2
                           "
                         >
+
                           <div>
+
                             <h5
                               className="
                                 font-bold
                                 text-xs
                                 text-[#12221d]
-                                hover:text-[#19714e]
                                 line-clamp-1
                               "
                             >
@@ -1078,6 +1362,7 @@ export default function HomePage() {
                             >
                               {job.company_name}
                             </p>
+
                           </div>
 
                           <span
@@ -1097,6 +1382,7 @@ export default function HomePage() {
                             {job.work_mode ||
                               "Remote"}
                           </span>
+
                         </div>
 
                         <div
@@ -1112,20 +1398,21 @@ export default function HomePage() {
                             border-[#dfe7e2]/50
                           "
                         >
+
                           <span>
                             ₹
                             {job.salary_min
                               ? (
-                                  job.salary_min /
-                                  100000
-                                ).toFixed(1)
+                                job.salary_min /
+                                100000
+                              ).toFixed(1)
                               : "0"}
                             L - ₹
                             {job.salary_max
                               ? (
-                                  job.salary_max /
-                                  100000
-                                ).toFixed(1)
+                                job.salary_max /
+                                100000
+                              ).toFixed(1)
                               : "0"}
                             L / yr
                           </span>
@@ -1135,19 +1422,24 @@ export default function HomePage() {
                               text-[10px]
                               font-semibold
                               text-[#12221d]
-                              hover:underline
                             "
                           >
                             Apply →
                           </span>
+
                         </div>
+
                       </motion.div>
+
                     ))}
+
                   </div>
+
                 )}
 
               {!loadingJobs &&
                 featuredJobs.length === 0 && (
+
                   <div
                     className="
                       py-6
@@ -1158,10 +1450,15 @@ export default function HomePage() {
                   >
                     No live opportunities found.
                   </div>
+
                 )}
+
             </div>
+
           </aside>
+
         </div>
+
       </main>
 
       {/* ======================================================
@@ -1197,10 +1494,9 @@ export default function HomePage() {
           gap-2
           border
           border-[#b9ef84]/40
-          backdrop-blur-md
         "
-        title="Create Post"
       >
+
         <Plus
           size={18}
           className="text-[#b9ef84]"
@@ -1210,12 +1506,11 @@ export default function HomePage() {
           className="
             text-xs
             font-bold
-            font-['Space_Grotesk']
-            tracking-wide
           "
         >
           Create Post
         </span>
+
       </motion.button>
 
       {/* ======================================================
@@ -1233,6 +1528,7 @@ export default function HomePage() {
       ====================================================== */}
 
       {selectedJob && (
+
         <JobDetailModal
           job={selectedJob}
           onClose={() =>
@@ -1248,38 +1544,47 @@ export default function HomePage() {
               )
           )}
           onToggleSave={(jobToSave) => {
+
             const jobId =
               jobToSave.id ||
               jobToSave._id;
 
-            setSavedJobs((previousJobs) => {
-              const alreadySaved =
-                previousJobs.some(
-                  (savedJob) =>
-                    (
-                      savedJob.id ||
-                      savedJob._id
-                    ) === jobId
-                );
+            setSavedJobs(
+              (previousJobs) => {
 
-              if (alreadySaved) {
-                return previousJobs.filter(
-                  (savedJob) =>
-                    (
-                      savedJob.id ||
-                      savedJob._id
-                    ) !== jobId
-                );
+                const alreadySaved =
+                  previousJobs.some(
+                    (savedJob) =>
+                      (
+                        savedJob.id ||
+                        savedJob._id
+                      ) === jobId
+                  );
+
+                if (alreadySaved) {
+
+                  return previousJobs.filter(
+                    (savedJob) =>
+                      (
+                        savedJob.id ||
+                        savedJob._id
+                      ) !== jobId
+                  );
+
+                }
+
+                return [
+                  ...previousJobs,
+                  jobToSave,
+                ];
               }
+            );
 
-              return [
-                ...previousJobs,
-                jobToSave,
-              ];
-            });
           }}
         />
+
       )}
+
     </div>
   );
 }

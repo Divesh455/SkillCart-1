@@ -6,57 +6,44 @@ import {
 
 import authService from "../services/authService";
 
-
 const AuthContext = createContext(null);
-
 
 export function AuthProvider({ children }) {
 
-  // ==========================================
+  // ============================================================
   // INITIAL TOKEN
-  // ==========================================
+  // ============================================================
 
   const [token, setToken] = useState(() => {
-
     return localStorage.getItem("token") || null;
-
   });
 
-
-  // ==========================================
+  // ============================================================
   // AUTHENTICATION STATE
-  // ==========================================
+  // ============================================================
 
   const [isAuthenticated, setIsAuthenticated] =
     useState(() => {
-
       return !!localStorage.getItem("token");
-
     });
 
-
-  // ==========================================
+  // ============================================================
   // NEW USER
-  // ==========================================
+  // ============================================================
 
   const [isNewUser, setIsNewUser] =
     useState(() => {
-
       return (
-        localStorage.getItem(
-          "isNewUser"
-        ) === "true"
+        localStorage.getItem("isNewUser") ===
+        "true"
       );
-
     });
 
-
-  // ==========================================
+  // ============================================================
   // USER
-  // ==========================================
+  // ============================================================
 
   const [user, setUser] = useState(() => {
-
     const savedUser =
       localStorage.getItem("user");
 
@@ -65,29 +52,34 @@ export function AuthProvider({ children }) {
     }
 
     try {
-
       return JSON.parse(savedUser);
-
     } catch {
-
       return null;
-
     }
-
   });
 
+  // ============================================================
+  // RESUME ID
+  // Ayush sends resume ID as "Rid"
+  // ============================================================
 
-  // ==========================================
+  const [resumeId, setResumeId] = useState(() => {
+    return (
+      localStorage.getItem("res_id") ||
+      null
+    );
+  });
+
+  // ============================================================
   // LOADING
-  // ==========================================
+  // ============================================================
 
   const [loading, setLoading] =
     useState(false);
 
-
-  // ==========================================
+  // ============================================================
   // LOGIN
-  // ==========================================
+  // ============================================================
 
   const login = async (credentials) => {
 
@@ -100,16 +92,14 @@ export function AuthProvider({ children }) {
           credentials
         );
 
-
       console.log(
         "LOGIN RESPONSE:",
         data
       );
 
-
-      // ========================================
+      // ========================================================
       // GET REAL TOKEN
-      // ========================================
+      // ========================================================
 
       const authToken =
         data?.token ||
@@ -118,10 +108,9 @@ export function AuthProvider({ children }) {
         data?.data?.token ||
         data?.data?.accessToken;
 
-
-      // ========================================
+      // ========================================================
       // NEVER CREATE FAKE TOKEN
-      // ========================================
+      // ========================================================
 
       if (
         !authToken ||
@@ -136,23 +125,47 @@ export function AuthProvider({ children }) {
         throw new Error(
           "Login successful but authentication token was not received from the server."
         );
-
       }
 
-
-      // ========================================
+      // ========================================================
       // GET USER
-      // ========================================
+      // ========================================================
 
       const authenticatedUser =
         data?.user ||
         data?.data?.user ||
         null;
 
+      // ========================================================
+      // GET RESUME ID
+      //
+      // Ayush's AuthResponse:
+      //
+      // token
+      // message
+      // Rid
+      //
+      // ========================================================
 
-      // ========================================
+      const resumeIdFromLogin =
+        data?.Rid ||
+        data?.rid ||
+        data?.res_id ||
+        data?.resumeId ||
+        data?.data?.Rid ||
+        data?.data?.rid ||
+        data?.data?.res_id ||
+        data?.data?.resumeId ||
+        null;
+
+      console.log(
+        "RESUME ID FROM LOGIN:",
+        resumeIdFromLogin
+      );
+
+      // ========================================================
       // NEW USER STATUS
-      // ========================================
+      // ========================================================
 
       const userIsNew =
         data?.user?.isNewUser ??
@@ -167,10 +180,9 @@ export function AuthProvider({ children }) {
           ) === "true"
         );
 
-
-      // ========================================
+      // ========================================================
       // SAVE TO REACT STATE
-      // ========================================
+      // ========================================================
 
       setToken(authToken);
 
@@ -180,22 +192,42 @@ export function AuthProvider({ children }) {
 
       setIsNewUser(userIsNew);
 
+      setResumeId(
+        resumeIdFromLogin
+      );
 
-      // ========================================
-      // SAVE TO LOCAL STORAGE
-      // ========================================
+      // ========================================================
+      // SAVE TOKEN
+      // ========================================================
 
       localStorage.setItem(
         "token",
         authToken
       );
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(
-          authenticatedUser
-        )
-      );
+      // ========================================================
+      // SAVE USER
+      // ========================================================
+
+      if (authenticatedUser) {
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(
+            authenticatedUser
+          )
+        );
+
+      } else {
+
+        localStorage.removeItem(
+          "user"
+        );
+      }
+
+      // ========================================================
+      // SAVE NEW USER STATUS
+      // ========================================================
 
       localStorage.setItem(
         "isNewUser",
@@ -204,10 +236,29 @@ export function AuthProvider({ children }) {
           : "false"
       );
 
+      // ========================================================
+      // SAVE RESUME ID
+      // ========================================================
 
-      // ========================================
+      if (resumeIdFromLogin) {
+
+        localStorage.setItem(
+          "res_id",
+          String(
+            resumeIdFromLogin
+          )
+        );
+
+      } else {
+
+        localStorage.removeItem(
+          "res_id"
+        );
+      }
+
+      // ========================================================
       // OPTIONAL GLOBAL TOKEN
-      // ========================================
+      // ========================================================
 
       if (
         typeof window !== "undefined"
@@ -215,16 +266,13 @@ export function AuthProvider({ children }) {
 
         window.__APP_TOKEN__ =
           authToken;
-
       }
 
-
-      // ========================================
+      // ========================================================
       // RETURN LOGIN DATA
-      // ========================================
+      // ========================================================
 
       return {
-
         ...data,
 
         token: authToken,
@@ -233,6 +281,8 @@ export function AuthProvider({ children }) {
 
         isNewUser: userIsNew,
 
+        res_id:
+          resumeIdFromLogin,
       };
 
     } finally {
@@ -240,13 +290,11 @@ export function AuthProvider({ children }) {
       setLoading(false);
 
     }
-
   };
 
-
-  // ==========================================
+  // ============================================================
   // REGISTER
-  // ==========================================
+  // ============================================================
 
   const register = async (
     userData
@@ -268,13 +316,11 @@ export function AuthProvider({ children }) {
       setLoading(false);
 
     }
-
   };
 
-
-  // ==========================================
+  // ============================================================
   // COMPLETE RESUME
-  // ==========================================
+  // ============================================================
 
   const completeResume = () => {
 
@@ -288,13 +334,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem(
       "justRegistered"
     );
-
   };
 
-
-  // ==========================================
+  // ============================================================
   // LOGOUT
-  // ==========================================
+  // ============================================================
 
   const logout = () => {
 
@@ -308,6 +352,11 @@ export function AuthProvider({ children }) {
 
     setToken(null);
 
+    setResumeId(null);
+
+    // ========================================================
+    // CLEAR LOCAL STORAGE
+    // ========================================================
 
     localStorage.removeItem(
       "token"
@@ -315,6 +364,10 @@ export function AuthProvider({ children }) {
 
     localStorage.removeItem(
       "user"
+    );
+
+    localStorage.removeItem(
+      "res_id"
     );
 
     localStorage.setItem(
@@ -326,21 +379,22 @@ export function AuthProvider({ children }) {
       "justRegistered"
     );
 
+    // ========================================================
+    // CLEAR GLOBAL TOKEN
+    // ========================================================
 
     if (
       typeof window !== "undefined"
     ) {
 
-      window.__APP_TOKEN__ = null;
-
+      window.__APP_TOKEN__ =
+        null;
     }
-
   };
 
-
-  // ==========================================
+  // ============================================================
   // UPDATE NEW USER
-  // ==========================================
+  // ============================================================
 
   const updateIsNewUser = (
     value
@@ -354,16 +408,13 @@ export function AuthProvider({ children }) {
         ? "true"
         : "false"
     );
-
   };
 
-
-  // ==========================================
+  // ============================================================
   // PROVIDER
-  // ==========================================
+  // ============================================================
 
   return (
-
     <AuthContext.Provider
       value={{
         user,
@@ -371,45 +422,45 @@ export function AuthProvider({ children }) {
         isAuthenticated,
         isNewUser,
         loading,
+
+        // Resume ID
+        resumeId,
+
         login,
         register,
         logout,
         completeResume,
+
         setIsNewUser:
           updateIsNewUser,
+
         setUser,
+
+        setResumeId,
       }}
     >
-
       {children}
-
     </AuthContext.Provider>
-
   );
-
 }
 
+// ============================================================
+// USE AUTH
+// ============================================================
 
 export function useAuth() {
 
   const context =
-    useContext(
-      AuthContext
-    );
-
+    useContext(AuthContext);
 
   if (!context) {
 
     throw new Error(
       "useAuth must be used within an AuthProvider"
     );
-
   }
 
-
   return context;
-
 }
-
 
 export default AuthContext;

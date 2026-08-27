@@ -63,12 +63,70 @@ export function extractRidFromResponse(apiResult) {
 }
 
 export const resumeService = {
+  getParsedResume: async (resumeId) => {
+    if (!resumeId) {
+      throw new Error("Resume ID not found");
+    }
+
+    const token =
+      localStorage.getItem("token") ||
+      (typeof window !== "undefined"
+        ? window.__APP_TOKEN__
+        : "");
+
+    const validToken =
+      token &&
+      token !== "undefined" &&
+      token !== "null" &&
+      token.trim() !== "";
+
+    const response = await fetch(
+      `${GENERATE_RESUME_BASE_URL}/api/v1/resume/${resumeId}`,
+      {
+        method: "GET",
+        headers: {
+          ...(validToken
+            ? {
+              Authorization: `Bearer ${token}`,
+            }
+            : {}),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({}));
+
+      throw new Error(
+        errorData.message ||
+        errorData.error ||
+        errorData.detail ||
+        `Failed to fetch resume data: ${response.status}`
+      );
+    }
+
+    const result = await response.json();
+
+    console.log(
+      "PARSED RESUME DATA:",
+      result
+    );
+
+    return result;
+  },
   /**
    * Post resume form data to generate resume details
    * Endpoint: POST https://skillcart-ai.onrender.com/api/v1/resume/generate
    * @param {Object} payload - Candidate resume data
    * @returns {Promise<Object>} API response details containing data.download_url
    */
+  // ==========================================================
+  // GET PARSED RESUME DATA BY RESUME ID
+  // ==========================================================
+
+
   generateResume: async (payload) => {
     const token = localStorage.getItem("token") || (typeof window !== "undefined" ? window.__APP_TOKEN__ : "");
     const validToken = token && token !== "undefined" && token !== "null" && token.trim() !== "";
