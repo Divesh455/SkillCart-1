@@ -26,9 +26,7 @@ import { useApp } from "../../context/AppContext";
 import resumeService from "../../services/resumeService";
 import jobService from "../../services/jobService";
 
-
 export default function HomePage() {
-
   // ============================================================
   // AUTHENTICATED USER
   // ============================================================
@@ -41,7 +39,6 @@ export default function HomePage() {
     downloadUrl,
   } = useApp();
 
-
   // ============================================================
   // CREATE POST MODAL
   // ============================================================
@@ -49,17 +46,17 @@ export default function HomePage() {
   const [isCreatePostOpen, setIsCreatePostOpen] =
     useState(false);
 
-
   // ============================================================
-  // FEED REFRESH
+  // NEWLY CREATED POST
   //
-  // Whenever this value changes, Feed gets remounted.
-  // This allows the newly created post to appear immediately.
+  // We keep the post returned by the backend locally.
+  //
+  // This is important because Ayush's current FeedService
+  // can return an empty feed when the user follows nobody.
+  // We are NOT changing the backend.
   // ============================================================
 
-  const [feedRefreshKey, setFeedRefreshKey] =
-    useState(0);
-
+  const [newPost, setNewPost] = useState(null);
 
   // ============================================================
   // JOB SIDEBAR
@@ -77,12 +74,8 @@ export default function HomePage() {
   const [savedJobs, setSavedJobs] =
     useState([]);
 
-
   // ============================================================
   // DAILY GOALS
-  //
-  // Keeping this local for now because there is currently
-  // no Daily Goals API in the Social backend.
   // ============================================================
 
   const [goals, setGoals] = useState([
@@ -103,13 +96,11 @@ export default function HomePage() {
     },
   ]);
 
-
   // ============================================================
   // TOGGLE DAILY GOAL
   // ============================================================
 
   const toggleGoal = (id) => {
-
     setGoals((previousGoals) =>
       previousGoals.map((goal) =>
         goal.id === id
@@ -120,16 +111,10 @@ export default function HomePage() {
           : goal
       )
     );
-
   };
-
 
   // ============================================================
   // USER SKILLS
-  //
-  // Use extracted skills when available.
-  // The fallback is only UI fallback until profile/skills API
-  // is connected.
   // ============================================================
 
   const userSkills =
@@ -143,19 +128,15 @@ export default function HomePage() {
           "GraphQL",
         ];
 
-
   // ============================================================
   // FETCH FEATURED JOBS
   // ============================================================
 
   useEffect(() => {
-
     let isMounted = true;
 
     const fetchTopJobs = async () => {
-
       try {
-
         setLoadingJobs(true);
 
         const response =
@@ -168,72 +149,59 @@ export default function HomePage() {
           isMounted &&
           response?.items
         ) {
-
           setFeaturedJobs(
             response.items.slice(0, 3)
           );
-
         }
-
       } catch (error) {
-
         console.warn(
           "Could not fetch top jobs for sidebar:",
           error
         );
-
       } finally {
-
         if (isMounted) {
           setLoadingJobs(false);
         }
-
       }
-
     };
 
-
     fetchTopJobs();
-
 
     return () => {
       isMounted = false;
     };
-
   }, []);
-
 
   // ============================================================
   // POST CREATED
   //
-  // CreatePostModal calls this after the backend successfully
-  // creates the post.
+  // CreatePostModal sends the real response returned by:
   //
-  // Incrementing feedRefreshKey forces Feed to mount again,
-  // causing it to fetch the latest posts.
+  // POST /api/social/posts
+  //
+  // We save that response in HomePage.
   // ============================================================
 
-  const handlePostCreated = () => {
+  const handlePostCreated = (createdPost) => {
+    console.log(
+      "HOME PAGE - CREATED POST:",
+      createdPost
+    );
 
     setIsCreatePostOpen(false);
 
-    setFeedRefreshKey(
-      (previousKey) => previousKey + 1
-    );
-
+    if (createdPost) {
+      setNewPost(createdPost);
+    }
   };
-
 
   // ============================================================
   // CLOSE CREATE POST MODAL
   // ============================================================
 
   const handleCloseCreatePost = () => {
-
     setIsCreatePostOpen(false);
-
   };
-
 
   // ============================================================
   // COMPLETED GOALS
@@ -243,7 +211,6 @@ export default function HomePage() {
     goals.filter(
       (goal) => goal.done
     ).length;
-
 
   // ============================================================
   // USER AVATAR
@@ -258,13 +225,11 @@ export default function HomePage() {
       .substring(0, 2)
       .toUpperCase();
 
-
   // ============================================================
   // RENDER
   // ============================================================
 
   return (
-
     <div
       className="
         min-h-screen
@@ -277,13 +242,11 @@ export default function HomePage() {
         selection:text-[#19714e]
       "
     >
-
       {/* ======================================================
           HEADER
       ====================================================== */}
 
       <AppHeader />
-
 
       {/* ======================================================
           MAIN CONTENT
@@ -302,7 +265,6 @@ export default function HomePage() {
           space-y-6
         "
       >
-
         {/* ====================================================
             THREE COLUMN LAYOUT
         ==================================================== */}
@@ -316,8 +278,6 @@ export default function HomePage() {
             items-start
           "
         >
-
-
           {/* ==================================================
               LEFT SIDEBAR
           ================================================== */}
@@ -347,10 +307,7 @@ export default function HomePage() {
               scrollbar-none
             "
           >
-
-            {/* ================================================
-                PROFILE CARD
-            ================================================= */}
+            {/* PROFILE CARD */}
 
             <div
               className="
@@ -365,9 +322,6 @@ export default function HomePage() {
                 transition-all
               "
             >
-
-              {/* Banner */}
-
               <div
                 className="
                   h-20
@@ -379,7 +333,6 @@ export default function HomePage() {
                   overflow-hidden
                 "
               >
-
                 <div
                   className="
                     absolute
@@ -393,9 +346,7 @@ export default function HomePage() {
                 >
                   PRO
                 </div>
-
               </div>
-
 
               <div
                 className="
@@ -405,7 +356,6 @@ export default function HomePage() {
                   relative
                 "
               >
-
                 {/* Avatar */}
 
                 <div
@@ -432,7 +382,6 @@ export default function HomePage() {
                   {avatarText}
                 </div>
 
-
                 {/* Username */}
 
                 <h3
@@ -447,7 +396,6 @@ export default function HomePage() {
                     gap-1.5
                   "
                 >
-
                   <span>
                     {username}
                   </span>
@@ -456,9 +404,7 @@ export default function HomePage() {
                     size={16}
                     className="text-[#19714e]"
                   />
-
                 </h3>
-
 
                 {/* Target Job */}
 
@@ -473,16 +419,13 @@ export default function HomePage() {
                     gap-1
                   "
                 >
-
                   <Sparkles size={12} />
 
                   <span>
                     {targetJobTitle ||
                       "Software Engineer"}
                   </span>
-
                 </p>
-
 
                 {/* ATS SCORE */}
 
@@ -497,7 +440,6 @@ export default function HomePage() {
                     space-y-2
                   "
                 >
-
                   <div
                     className="
                       flex
@@ -507,7 +449,6 @@ export default function HomePage() {
                       font-bold
                     "
                   >
-
                     <span className="text-[#68756f]">
                       ATS Match Score
                     </span>
@@ -515,9 +456,7 @@ export default function HomePage() {
                     <span className="text-[#19714e]">
                       88%
                     </span>
-
                   </div>
-
 
                   <div
                     className="
@@ -528,7 +467,6 @@ export default function HomePage() {
                       overflow-hidden
                     "
                   >
-
                     <div
                       className="
                         h-full
@@ -539,11 +477,8 @@ export default function HomePage() {
                         w-[88%]
                       "
                     />
-
                   </div>
-
                 </div>
-
 
                 {/* SKILLS */}
 
@@ -555,7 +490,6 @@ export default function HomePage() {
                     border-[#dfe7e2]/70
                   "
                 >
-
                   <span
                     className="
                       text-[11px]
@@ -570,7 +504,6 @@ export default function HomePage() {
                     Top Verified Skills
                   </span>
 
-
                   <div
                     className="
                       flex
@@ -578,10 +511,8 @@ export default function HomePage() {
                       gap-1.5
                     "
                   >
-
                     {userSkills.map(
                       (skill, index) => (
-
                         <span
                           key={`${skill}-${index}`}
                           className="
@@ -598,14 +529,10 @@ export default function HomePage() {
                         >
                           {skill}
                         </span>
-
                       )
                     )}
-
                   </div>
-
                 </div>
-
 
                 {/* PROFILE ACTIONS */}
 
@@ -617,9 +544,7 @@ export default function HomePage() {
                     gap-2
                   "
                 >
-
                   {downloadUrl && (
-
                     <motion.button
                       whileHover={{
                         scale: 1.02,
@@ -651,17 +576,13 @@ export default function HomePage() {
                         shadow-md
                       "
                     >
-
                       <Download size={14} />
 
                       <span>
                         Download Resume
                       </span>
-
                     </motion.button>
-
                   )}
-
 
                   <Link
                     to="/resume"
@@ -684,25 +605,17 @@ export default function HomePage() {
                       border-[#dfe7e2]
                     "
                   >
-
                     <FileText size={14} />
 
                     <span>
                       Update Resume
                     </span>
-
                   </Link>
-
                 </div>
-
               </div>
-
             </div>
 
-
-            {/* ================================================
-                DAILY GOALS
-            ================================================= */}
+            {/* DAILY GOALS */}
 
             <div
               className="
@@ -715,7 +628,6 @@ export default function HomePage() {
                 space-y-3
               "
             >
-
               <div
                 className="
                   flex
@@ -726,7 +638,6 @@ export default function HomePage() {
                   pb-2.5
                 "
               >
-
                 <h4
                   className="
                     font-bold
@@ -740,7 +651,6 @@ export default function HomePage() {
                     font-['Space_Grotesk']
                   "
                 >
-
                   <Target
                     size={15}
                     className="text-[#19714e]"
@@ -749,9 +659,7 @@ export default function HomePage() {
                   <span>
                     Daily Goals
                   </span>
-
                 </h4>
-
 
                 <span
                   className="
@@ -767,14 +675,10 @@ export default function HomePage() {
                   {completedGoalsCount}/
                   {goals.length} Done
                 </span>
-
               </div>
 
-
               <div className="space-y-2">
-
                 {goals.map((goal) => (
-
                   <div
                     key={goal.id}
                     onClick={() =>
@@ -798,7 +702,6 @@ export default function HomePage() {
                       }
                     `}
                   >
-
                     <div
                       className={`
                         w-4
@@ -817,16 +720,13 @@ export default function HomePage() {
                         }
                       `}
                     >
-
                       {goal.done && (
                         <Check
                           size={12}
                           strokeWidth={3}
                         />
                       )}
-
                     </div>
-
 
                     <span
                       className={
@@ -837,17 +737,11 @@ export default function HomePage() {
                     >
                       {goal.text}
                     </span>
-
                   </div>
-
                 ))}
-
               </div>
-
             </div>
-
           </motion.aside>
-
 
           {/* ==================================================
               CENTER COLUMN
@@ -862,10 +756,7 @@ export default function HomePage() {
               sm:pb-0
             "
           >
-
-            {/* ================================================
-                CREATE POST TRIGGER
-            ================================================= */}
+            {/* CREATE POST TRIGGER */}
 
             <motion.div
               initial={{
@@ -898,7 +789,6 @@ export default function HomePage() {
                 group
               "
             >
-
               <div
                 className="
                   flex
@@ -908,9 +798,6 @@ export default function HomePage() {
                   min-w-0
                 "
               >
-
-                {/* Avatar */}
-
                 <div
                   className="
                     w-9
@@ -939,9 +826,6 @@ export default function HomePage() {
                     : "U"}
                 </div>
 
-
-                {/* Input trigger */}
-
                 <div
                   className="
                     flex-1
@@ -962,11 +846,7 @@ export default function HomePage() {
                 >
                   Start a post, share photos or job referrals...
                 </div>
-
               </div>
-
-
-              {/* Actions */}
 
               <div
                 className="
@@ -976,7 +856,6 @@ export default function HomePage() {
                   shrink-0
                 "
               >
-
                 <button
                   type="button"
                   onClick={(event) => {
@@ -997,7 +876,6 @@ export default function HomePage() {
                 >
                   <ImageIcon size={16} />
                 </button>
-
 
                 <button
                   type="button"
@@ -1022,7 +900,6 @@ export default function HomePage() {
                     gap-1.5
                   "
                 >
-
                   <Plus
                     size={15}
                     className="text-[#b9ef84]"
@@ -1031,24 +908,16 @@ export default function HomePage() {
                   <span>
                     Create Post
                   </span>
-
                 </button>
-
               </div>
-
             </motion.div>
 
-
-            {/* ================================================
+            {/* =================================================
                 DYNAMIC SOCIAL FEED
             ================================================= */}
 
-            <Feed
-              key={feedRefreshKey}
-            />
-
+            <Feed newPost={newPost} />
           </section>
-
 
           {/* ==================================================
               RIGHT SIDEBAR
@@ -1067,10 +936,7 @@ export default function HomePage() {
               scrollbar-none
             "
           >
-
-            {/* ================================================
-                LIVE JOB REFERRALS
-            ================================================= */}
+            {/* LIVE JOB REFERRALS */}
 
             <div
               className="
@@ -1083,7 +949,6 @@ export default function HomePage() {
                 space-y-3
               "
             >
-
               <div
                 className="
                   flex
@@ -1094,7 +959,6 @@ export default function HomePage() {
                   border-[#dfe7e2]/70
                 "
               >
-
                 <h4
                   className="
                     font-bold
@@ -1108,7 +972,6 @@ export default function HomePage() {
                     font-['Space_Grotesk']
                   "
                 >
-
                   <Zap
                     size={16}
                     className="
@@ -1120,9 +983,7 @@ export default function HomePage() {
                   <span>
                     Live Job Referrals
                   </span>
-
                 </h4>
-
 
                 <Link
                   to="/jobs"
@@ -1136,20 +997,13 @@ export default function HomePage() {
                     gap-0.5
                   "
                 >
-
                   View All
 
                   <ChevronRight size={12} />
-
                 </Link>
-
               </div>
 
-
-              {/* Loading */}
-
               {loadingJobs && (
-
                 <div
                   className="
                     py-6
@@ -1161,19 +1015,12 @@ export default function HomePage() {
                 >
                   Syncing live opportunities...
                 </div>
-
               )}
-
-
-              {/* Jobs */}
 
               {!loadingJobs &&
                 featuredJobs.length > 0 && (
-
                   <div className="space-y-2.5">
-
                     {featuredJobs.map((job) => (
-
                       <motion.div
                         whileHover={{
                           scale: 1.02,
@@ -1200,7 +1047,6 @@ export default function HomePage() {
                           space-y-2
                         "
                       >
-
                         <div
                           className="
                             flex
@@ -1209,9 +1055,7 @@ export default function HomePage() {
                             gap-2
                           "
                         >
-
                           <div>
-
                             <h5
                               className="
                                 font-bold
@@ -1234,9 +1078,7 @@ export default function HomePage() {
                             >
                               {job.company_name}
                             </p>
-
                           </div>
-
 
                           <span
                             className="
@@ -1255,9 +1097,7 @@ export default function HomePage() {
                             {job.work_mode ||
                               "Remote"}
                           </span>
-
                         </div>
-
 
                         <div
                           className="
@@ -1272,7 +1112,6 @@ export default function HomePage() {
                             border-[#dfe7e2]/50
                           "
                         >
-
                           <span>
                             ₹
                             {job.salary_min
@@ -1291,7 +1130,6 @@ export default function HomePage() {
                             L / yr
                           </span>
 
-
                           <span
                             className="
                               text-[10px]
@@ -1302,23 +1140,14 @@ export default function HomePage() {
                           >
                             Apply →
                           </span>
-
                         </div>
-
                       </motion.div>
-
                     ))}
-
                   </div>
-
                 )}
-
-
-              {/* No jobs */}
 
               {!loadingJobs &&
                 featuredJobs.length === 0 && (
-
                   <div
                     className="
                       py-6
@@ -1329,17 +1158,11 @@ export default function HomePage() {
                   >
                     No live opportunities found.
                   </div>
-
                 )}
-
             </div>
-
           </aside>
-
         </div>
-
       </main>
-
 
       {/* ======================================================
           MOBILE CREATE POST BUTTON
@@ -1378,7 +1201,6 @@ export default function HomePage() {
         "
         title="Create Post"
       >
-
         <Plus
           size={18}
           className="text-[#b9ef84]"
@@ -1394,9 +1216,7 @@ export default function HomePage() {
         >
           Create Post
         </span>
-
       </motion.button>
-
 
       {/* ======================================================
           CREATE POST MODAL
@@ -1408,13 +1228,11 @@ export default function HomePage() {
         onPostCreated={handlePostCreated}
       />
 
-
       {/* ======================================================
           JOB DETAIL MODAL
       ====================================================== */}
 
       {selectedJob && (
-
         <JobDetailModal
           job={selectedJob}
           onClose={() =>
@@ -1430,13 +1248,11 @@ export default function HomePage() {
               )
           )}
           onToggleSave={(jobToSave) => {
-
             const jobId =
               jobToSave.id ||
               jobToSave._id;
 
             setSavedJobs((previousJobs) => {
-
               const alreadySaved =
                 previousJobs.some(
                   (savedJob) =>
@@ -1447,7 +1263,6 @@ export default function HomePage() {
                 );
 
               if (alreadySaved) {
-
                 return previousJobs.filter(
                   (savedJob) =>
                     (
@@ -1455,21 +1270,16 @@ export default function HomePage() {
                       savedJob._id
                     ) !== jobId
                 );
-
               }
 
               return [
                 ...previousJobs,
                 jobToSave,
               ];
-
             });
-
           }}
         />
-
       )}
-
     </div>
   );
 }
