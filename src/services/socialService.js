@@ -2,6 +2,33 @@ import socialApi from "./socialApi";
 
 const socialService = {
   // =====================================
+  // FOLLOW USER
+  // =====================================
+
+  followUser: (userId) =>
+    socialApi.post(
+      `/api/social/users/${userId}/follow`
+    ),
+
+  // =====================================
+  // UNFOLLOW USER
+  // =====================================
+
+  unfollowUser: (userId) =>
+    socialApi.delete(
+      `/api/social/users/${userId}/follow`
+    ),
+
+  // =====================================
+  // CHECK FOLLOWING STATUS
+  // =====================================
+
+  getFollowingStatus: async (userId) => {
+    return socialApi.get(
+      `/api/social/users/${userId}/following-status`
+    );
+  },
+  // =====================================
   // GET HOME FEED
   // =====================================
 
@@ -92,6 +119,51 @@ const socialService = {
 
     return response.json();
   },
+
+  // ============================================================
+  // FOLLOW USER
+  // ============================================================
+
+  followUser: (userId) =>
+    socialApi.post(
+      `/api/social/users/${userId}/follow`
+    ),
+
+  // ============================================================
+  // UNFOLLOW USER
+  // ============================================================
+
+  unfollowUser: (userId) =>
+    socialApi.delete(
+      `/api/social/users/${userId}/follow`
+    ),
+
+  // ============================================================
+  // CHECK FOLLOWING STATUS
+  // ============================================================
+
+  getFollowingStatus: (userId) =>
+    socialApi.get(
+      `/api/social/users/${userId}/following-status`
+    ),
+
+  // ============================================================
+  // FOLLOWERS COUNT
+  // ============================================================
+
+  getFollowersCount: (userId) =>
+    socialApi.get(
+      `/api/social/users/${userId}/followers/count`
+    ),
+
+  // ============================================================
+  // FOLLOWING COUNT
+  // ============================================================
+
+  getFollowingCount: (userId) =>
+    socialApi.get(
+      `/api/social/users/${userId}/following/count`
+    ),
   // =====================================
   // LIKE POST
   // =====================================

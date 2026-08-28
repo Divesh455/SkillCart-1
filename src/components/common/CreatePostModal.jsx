@@ -26,6 +26,40 @@ export default function CreatePostModal({
   onPostCreated,
 }) {
   const { user } = useAuth();
+  const getUsername = () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      return "User";
+    }
+
+    const payload = JSON.parse(
+      atob(token.split(".")[1])
+    );
+
+    return (
+      user?.username ||
+      payload?.username ||
+      payload?.sub ||
+      "User"
+    );
+  } catch (error) {
+    console.error(
+      "Could not get username:",
+      error
+    );
+
+    return user?.username || "User";
+  }
+};
+
+const username = getUsername();
+
+const avatarText = username
+  .trim()
+  .substring(0,1)
+  .toUpperCase();
 
   // ============================================================
   // FORM STATE
@@ -61,10 +95,6 @@ export default function CreatePostModal({
   const resetForm = () => {
     setContent("");
 
-    setSelectedTag(
-      "CareerUpdate"
-    );
-
     setImagePreview(null);
 
     setSelectedImage(null);
@@ -72,8 +102,7 @@ export default function CreatePostModal({
     setError("");
 
     if (fileInputRef.current) {
-      fileInputRef.current.value =
-        "";
+      fileInputRef.current.value = "";
     }
   };
 
@@ -269,7 +298,7 @@ export default function CreatePostModal({
 
       setError(
         error?.message ||
-          "Failed to create post."
+        "Failed to create post."
       );
 
     } finally {
@@ -413,14 +442,7 @@ export default function CreatePostModal({
                   shrink-0
                 "
               >
-                {user?.username
-                  ? user.username
-                      .substring(
-                        0,
-                        2
-                      )
-                      .toUpperCase()
-                  : "US"}
+                {avatarText}
               </div>
 
               <div>

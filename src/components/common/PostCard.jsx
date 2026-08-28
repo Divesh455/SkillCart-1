@@ -9,13 +9,22 @@ import {
   X,
 } from "lucide-react";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import socialService from "../../services/socialService";
+import UserHeader from "./UserHeader";
+
+// ============================================================
+// GET CURRENT USER ID FROM JWT
+// ============================================================
 
 function getCurrentUserId() {
   try {
-    const token = localStorage.getItem("token");
+    const token =
+      localStorage.getItem("token");
 
     if (!token) return null;
 
@@ -34,26 +43,243 @@ function getCurrentUserId() {
   }
 }
 
-export default function PostCard({ post, onPostDeleted }) {
+export default function PostCard({
+  post,
+  onPostDeleted,
+}) {
+
   // ============================================================
-  // USER
+  // CURRENT USER
   // ============================================================
 
   const currentUserId =
     getCurrentUserId();
 
+  // ============================================================
+  // POST USER
+  // ============================================================
+
+  const [postUser, setPostUser] =
+    useState(null);
+
+  // ============================================================
+  // LOAD POST USER
+  // ============================================================
+
+  useEffect(() => {
+
+    if (!post?.userId) {
+      return;
+    }
+
+    const loadPostUser =
+      async () => {
+
+        try {
+
+          const users =
+            await socialService.getAllUsers();
+
+          console.log(
+            "ALL USERS FOR POST:",
+            users
+          );
+
+          const foundUser =
+            Array.isArray(users)
+              ? users.find(
+                  (user) =>
+                    String(user.id) ===
+                    String(post.userId)
+                )
+              : null;
+
+          console.log(
+            "POST USER:",
+            post.userId,
+            foundUser
+          );
+
+          setPostUser(
+            foundUser || null
+          );
+
+        } catch (error) {
+
+          console.error(
+            "FAILED TO LOAD POST USER:",
+            error
+          );
+
+          setPostUser(null);
+        }
+      };
+
+    loadPostUser();
+
+  }, [post?.userId]);
+
+  // ============================================================
+  // CHECK MY POST
+  // ============================================================
+
   const isMyPost =
-    currentUserId &&
-    post?.userId &&
-    currentUserId === post.userId;
+    Boolean(
+      currentUserId &&
+      post?.userId &&
+      String(currentUserId) ===
+        String(post.userId)
+    );
+
+  // ============================================================
+  // FOLLOW
+  // ============================================================
+
+  const [isFollowing, setIsFollowing] =
+    useState(false);
+
+  const [followLoading, setFollowLoading] =
+    useState(false);
+
+  const [followError, setFollowError] =
+    useState("");
+
+  // ============================================================
+  // CHECK FOLLOWING STATUS
+  // ============================================================
+
+  useEffect(() => {
+
+    if (
+      !post?.userId ||
+      !currentUserId ||
+      isMyPost
+    ) {
+      return;
+    }
+
+    const checkFollowingStatus =
+      async () => {
+
+        try {
+
+          const response =
+            await socialService.getFollowingStatus(
+              post.userId
+            );
+
+          console.log(
+            "FOLLOWING STATUS:",
+            post.userId,
+            response
+          );
+
+          const following =
+            typeof response ===
+            "boolean"
+              ? response
+              : response?.following ??
+                response?.isFollowing ??
+                response?.followingStatus ??
+                response?.data?.following ??
+                response?.data?.isFollowing ??
+                false;
+
+          setIsFollowing(
+            Boolean(following)
+          );
+
+        } catch (error) {
+
+          console.error(
+            "FOLLOWING STATUS ERROR:",
+            error
+          );
+
+        }
+      };
+
+    checkFollowingStatus();
+
+  }, [
+    post?.userId,
+    currentUserId,
+    isMyPost,
+  ]);
+
+  // ============================================================
+  // FOLLOW / UNFOLLOW
+  // ============================================================
+
+  const handleFollow = async () => {
+
+    if (
+      followLoading ||
+      !post?.userId ||
+      isMyPost
+    ) {
+      return;
+    }
+
+    try {
+
+      setFollowLoading(true);
+      setFollowError("");
+
+      if (isFollowing) {
+
+        await socialService.unfollowUser(
+          post.userId
+        );
+
+        setIsFollowing(false);
+
+        console.log(
+          "UNFOLLOW SUCCESS:",
+          post.userId
+        );
+
+      } else {
+
+        await socialService.followUser(
+          post.userId
+        );
+
+        setIsFollowing(true);
+
+        console.log(
+          "FOLLOW SUCCESS:",
+          post.userId
+        );
+      }
+
+    } catch (error) {
+
+      console.error(
+        "FOLLOW / UNFOLLOW ERROR:",
+        error
+      );
+
+      setFollowError(
+        error?.message ||
+          "Unable to update follow status."
+      );
+
+    } finally {
+
+      setFollowLoading(false);
+
+    }
+  };
 
   // ============================================================
   // LIKE
   // ============================================================
 
-  const [liked, setLiked] = useState(
-    Boolean(post?.likedByMe)
-  );
+  const [liked, setLiked] =
+    useState(
+      Boolean(post?.likedByMe)
+    );
 
   const [likeCount, setLikeCount] =
     useState(
@@ -75,7 +301,9 @@ export default function PostCard({ post, onPostDeleted }) {
 
   const [commentCount, setCommentCount] =
     useState(
-      Number(post?.commentCount || 0)
+      Number(
+        post?.commentCount || 0
+      )
     );
 
   const [commentsLoading, setCommentsLoading] =
@@ -111,6 +339,7 @@ export default function PostCard({ post, onPostDeleted }) {
   // ============================================================
 
   const handleLike = async () => {
+
     if (
       likeLoading ||
       !post?.id
@@ -119,9 +348,11 @@ export default function PostCard({ post, onPostDeleted }) {
     }
 
     try {
+
       setLikeLoading(true);
 
       if (liked) {
+
         await socialService.unlikePost(
           post.id
         );
@@ -135,7 +366,9 @@ export default function PostCard({ post, onPostDeleted }) {
               count - 1
             )
         );
+
       } else {
+
         await socialService.likePost(
           post.id
         );
@@ -147,13 +380,18 @@ export default function PostCard({ post, onPostDeleted }) {
             count + 1
         );
       }
+
     } catch (error) {
+
       console.error(
         "LIKE / UNLIKE ERROR:",
         error
       );
+
     } finally {
+
       setLikeLoading(false);
+
     }
   };
 
@@ -162,11 +400,13 @@ export default function PostCard({ post, onPostDeleted }) {
   // ============================================================
 
   const loadComments = async () => {
+
     if (!post?.id) {
       return;
     }
 
     try {
+
       setCommentsLoading(true);
       setCommentError("");
 
@@ -192,11 +432,14 @@ export default function PostCard({ post, onPostDeleted }) {
         typeof response?.totalElements ===
         "number"
       ) {
+
         setCommentCount(
           response.totalElements
         );
       }
+
     } catch (error) {
+
       console.error(
         "GET COMMENTS ERROR:",
         error
@@ -206,8 +449,11 @@ export default function PostCard({ post, onPostDeleted }) {
         error?.message ||
           "Unable to load comments."
       );
+
     } finally {
+
       setCommentsLoading(false);
+
     }
   };
 
@@ -215,169 +461,180 @@ export default function PostCard({ post, onPostDeleted }) {
   // COMMENT BUTTON
   // ============================================================
 
-  const handleCommentClick = async () => {
-    const nextState =
-      !showComments;
+  const handleCommentClick =
+    async () => {
 
-    setShowComments(
-      nextState
-    );
+      const nextState =
+        !showComments;
 
-    if (nextState) {
-      await loadComments();
-    }
-  };
+      setShowComments(
+        nextState
+      );
+
+      if (nextState) {
+        await loadComments();
+      }
+    };
 
   // ============================================================
   // ADD COMMENT
   // ============================================================
 
-  const handleAddComment = async (
-    event
-  ) => {
-    event.preventDefault();
+  const handleAddComment =
+    async (event) => {
 
-    const text =
-      commentText.trim();
+      event.preventDefault();
 
-    if (
-      !text ||
-      !post?.id ||
-      commentSubmitting
-    ) {
-      return;
-    }
+      const text =
+        commentText.trim();
 
-    try {
-      setCommentSubmitting(true);
-      setCommentError("");
-
-      const newComment =
-        await socialService.addComment(
-          post.id,
-          text
-        );
-
-      if (newComment) {
-        setComments(
-          (current) => [
-            ...current,
-            newComment,
-          ]
-        );
-
-        setCommentCount(
-          (count) =>
-            count + 1
-        );
-      } else {
-        await loadComments();
+      if (
+        !text ||
+        !post?.id ||
+        commentSubmitting
+      ) {
+        return;
       }
 
-      setCommentText("");
-    } catch (error) {
-      console.error(
-        "ADD COMMENT ERROR:",
-        error
-      );
+      try {
 
-      setCommentError(
-        error?.message ||
-          "Failed to add comment."
-      );
-    } finally {
-      setCommentSubmitting(
-        false
-      );
-    }
-  };
+        setCommentSubmitting(
+          true
+        );
+
+        setCommentError("");
+
+        const newComment =
+          await socialService.addComment(
+            post.id,
+            text
+          );
+
+        if (newComment) {
+
+          setComments(
+            (current) => [
+              ...current,
+              newComment,
+            ]
+          );
+
+          setCommentCount(
+            (count) =>
+              count + 1
+          );
+
+        } else {
+
+          await loadComments();
+
+        }
+
+        setCommentText("");
+
+      } catch (error) {
+
+        console.error(
+          "ADD COMMENT ERROR:",
+          error
+        );
+
+        setCommentError(
+          error?.message ||
+            "Failed to add comment."
+        );
+
+      } finally {
+
+        setCommentSubmitting(
+          false
+        );
+
+      }
+    };
 
   // ============================================================
   // DELETE POST
   // ============================================================
 
-  const handleDeletePost = async () => {
-    if (
-      deleteLoading ||
-      !post?.id
-    ) {
-      return;
-    }
+  const handleDeletePost =
+    async () => {
 
-    try {
-      setDeleteLoading(true);
-      setDeleteError("");
-
-      console.log(
-        "DELETE POST:",
-        post.id
-      );
-
-      await socialService.deletePost(
-        post.id
-      );
-
-      console.log(
-        "POST DELETED:",
-        post.id
-      );
-
-      // Tell Feed.jsx to remove
-      // the deleted post.
-      if (onPostDeleted) {
-        onPostDeleted(
-          post.id
-        );
+      if (
+        deleteLoading ||
+        !post?.id
+      ) {
+        return;
       }
 
-      setShowDeleteConfirm(
-        false
-      );
-      setShowMenu(false);
+      try {
 
-    } catch (error) {
-      console.error(
-        "DELETE POST ERROR:",
-        error
-      );
+        setDeleteLoading(true);
+        setDeleteError("");
 
-      setDeleteError(
-        error?.message ||
-          "Failed to delete post."
-      );
-    } finally {
-      setDeleteLoading(
-        false
-      );
-    }
-  };
+        console.log(
+          "DELETE POST:",
+          post.id
+        );
 
-  // ============================================================
-  // DATE
-  // ============================================================
+        await socialService.deletePost(
+          post.id
+        );
 
-  const formattedDate =
-    post?.createdAt
-      ? new Date(
-          post.createdAt
-        ).toLocaleString()
-      : "";
+        console.log(
+          "POST DELETED:",
+          post.id
+        );
+
+        if (onPostDeleted) {
+
+          onPostDeleted(
+            post.id
+          );
+        }
+
+        setShowDeleteConfirm(
+          false
+        );
+
+        setShowMenu(false);
+
+      } catch (error) {
+
+        console.error(
+          "DELETE POST ERROR:",
+          error
+        );
+
+        setDeleteError(
+          error?.message ||
+            "Failed to delete post."
+        );
+
+      } finally {
+
+        setDeleteLoading(
+          false
+        );
+
+      }
+    };
 
   // ============================================================
   // COMMENT DATE
   // ============================================================
 
-  const formatCommentDate = (
-    date
-  ) => {
-    if (!date) {
-      return "";
-    }
+  const formatCommentDate =
+    (date) => {
 
-    return new Date(
-      date
-    ).toLocaleString();
-  };
+      if (!date) {
+        return "";
+      }
+
+      return new Date(
+        date
+      ).toLocaleString();
+    };
 
   // ============================================================
   // RENDER
@@ -410,41 +667,38 @@ export default function PostCard({ post, onPostDeleted }) {
           "
         >
 
-          <div
-            className="
-              w-11
-              h-11
-              rounded-2xl
-              bg-gradient-to-br
-              from-[#123c2c]
-              to-[#19714e]
-              text-[#b9ef84]
-              flex
-              items-center
-              justify-center
-              font-bold
-              shrink-0
-            "
-          >
-            U
-          </div>
+          {/* ==================================================
+              USER HEADER
+          ================================================== */}
 
-          <div className="flex-1">
+          <UserHeader
+            user={postUser}
+            createdAt={post?.createdAt}
+            showFollow={!isMyPost}
+            isFollowing={isFollowing}
+            followLoading={followLoading}
+            onFollow={handleFollow}
+          />
 
-            <p className="text-sm font-bold">
-              SkillCart User
-            </p>
+          {/* ==================================================
+              FOLLOW ERROR
+          ================================================== */}
 
+          {followError && (
             <p
               className="
-                text-[11px]
-                text-[#68756f]
+                absolute
+                right-5
+                top-[72px]
+                text-[9px]
+                text-red-500
+                max-w-[150px]
+                text-right
               "
             >
-              {formattedDate}
+              {followError}
             </p>
-
-          </div>
+          )}
 
           {/* ==================================================
               POST MENU
@@ -493,6 +747,7 @@ export default function PostCard({ post, onPostDeleted }) {
                   <button
                     type="button"
                     onClick={() => {
+
                       setShowMenu(
                         false
                       );
@@ -500,6 +755,7 @@ export default function PostCard({ post, onPostDeleted }) {
                       setShowDeleteConfirm(
                         true
                       );
+
                     }}
                     className="
                       w-full
@@ -569,8 +825,10 @@ export default function PostCard({ post, onPostDeleted }) {
                 rounded-2xl
               "
               onError={(event) => {
+
                 event.currentTarget.style.display =
                   "none";
+
               }}
             />
 
@@ -653,11 +911,14 @@ export default function PostCard({ post, onPostDeleted }) {
           >
 
             {likeLoading ? (
+
               <Loader2
                 size={16}
                 className="animate-spin"
               />
+
             ) : (
+
               <Heart
                 size={16}
                 fill={
@@ -666,6 +927,7 @@ export default function PostCard({ post, onPostDeleted }) {
                     : "none"
                 }
               />
+
             )}
 
             {liked
@@ -715,6 +977,7 @@ export default function PostCard({ post, onPostDeleted }) {
         ==================================================== */}
 
         {showComments && (
+
           <div
             className="
               border-t
@@ -723,7 +986,7 @@ export default function PostCard({ post, onPostDeleted }) {
             "
           >
 
-            {/* HEADER */}
+            {/* COMMENTS HEADER */}
 
             <div
               className="
@@ -775,23 +1038,28 @@ export default function PostCard({ post, onPostDeleted }) {
               >
 
                 {commentsLoading ? (
+
                   <Loader2
                     size={14}
                     className="animate-spin"
                   />
+
                 ) : (
+
                   <RefreshCw
                     size={14}
                   />
+
                 )}
 
               </button>
 
             </div>
 
-            {/* ERROR */}
+            {/* COMMENT ERROR */}
 
             {commentError && (
+
               <div
                 className="
                   mx-5
@@ -809,9 +1077,10 @@ export default function PostCard({ post, onPostDeleted }) {
               >
                 {commentError}
               </div>
+
             )}
 
-            {/* COMMENTS */}
+            {/* COMMENTS LIST */}
 
             <div
               className="
@@ -880,6 +1149,7 @@ export default function PostCard({ post, onPostDeleted }) {
 
                 comments.map(
                   (comment) => (
+
                     <div
                       key={comment.id}
                       className="
@@ -967,6 +1237,7 @@ export default function PostCard({ post, onPostDeleted }) {
                       </div>
 
                     </div>
+
                   )
                 )
 
@@ -1042,12 +1313,18 @@ export default function PostCard({ post, onPostDeleted }) {
               >
 
                 {commentSubmitting ? (
+
                   <Loader2
                     size={15}
                     className="animate-spin"
                   />
+
                 ) : (
-                  <Send size={15} />
+
+                  <Send
+                    size={15}
+                  />
+
                 )}
 
               </button>
@@ -1064,6 +1341,7 @@ export default function PostCard({ post, onPostDeleted }) {
       ====================================================== */}
 
       {showDeleteConfirm && (
+
         <div
           className="
             fixed
@@ -1140,6 +1418,7 @@ export default function PostCard({ post, onPostDeleted }) {
             </p>
 
             {deleteError && (
+
               <div
                 className="
                   mt-3
@@ -1156,6 +1435,7 @@ export default function PostCard({ post, onPostDeleted }) {
               >
                 {deleteError}
               </div>
+
             )}
 
             <div
@@ -1217,20 +1497,26 @@ export default function PostCard({ post, onPostDeleted }) {
               >
 
                 {deleteLoading ? (
+
                   <>
                     <Loader2
                       size={14}
                       className="animate-spin"
                     />
+
                     Deleting...
                   </>
+
                 ) : (
+
                   <>
                     <Trash2
                       size={14}
                     />
+
                     Delete
                   </>
+
                 )}
 
               </button>
@@ -1240,6 +1526,7 @@ export default function PostCard({ post, onPostDeleted }) {
           </div>
 
         </div>
+
       )}
 
     </>
