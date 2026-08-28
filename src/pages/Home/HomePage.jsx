@@ -3,39 +3,48 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 import {
-  Check,
   Plus,
   Image as ImageIcon,
   Zap,
-  Target,
   ChevronRight,
   X,
   Globe,
   Code2,
   ExternalLink,
+  Sparkles,
 } from "lucide-react";
 
 import AppHeader from "../../components/common/AppHeader";
 import Feed from "../../components/common/Feed";
 import JobDetailModal from "../ForYou/JobDetailModal";
 import CreatePostModal from "../../components/common/CreatePostModal";
+import Copilot from "../../components/common/Copilot";
+
 import socialService from "../../services/socialService";
+import jobService from "../../services/jobService";
+
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
 
-import jobService from "../../services/jobService";
-
 export default function HomePage() {
+
   // ============================================================
   // USERS
   // ============================================================
 
   const [users, setUsers] = useState([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [loadingUsers, setLoadingUsers] =
+    useState(true);
 
-  // Follow state
-  const [followingUsers, setFollowingUsers] = useState({});
-  const [followLoading, setFollowLoading] = useState({});
+  // ============================================================
+  // FOLLOW STATE
+  // ============================================================
+
+  const [followingUsers, setFollowingUsers] =
+    useState({});
+
+  const [followLoading, setFollowLoading] =
+    useState({});
 
   // ============================================================
   // AUTH
@@ -48,8 +57,11 @@ export default function HomePage() {
   // ============================================================
 
   const getCurrentUserId = () => {
+
     try {
-      const token = localStorage.getItem("token");
+
+      const token =
+        localStorage.getItem("token");
 
       if (!token) {
         return null;
@@ -60,7 +72,9 @@ export default function HomePage() {
       );
 
       return payload?.userId || null;
+
     } catch (error) {
+
       console.error(
         "Could not get current user ID:",
         error
@@ -70,15 +84,19 @@ export default function HomePage() {
     }
   };
 
-  const currentUserId = getCurrentUserId();
+  const currentUserId =
+    getCurrentUserId();
 
   // ============================================================
   // FETCH ALL USERS
   // ============================================================
 
   useEffect(() => {
+
     const loadUsers = async () => {
+
       try {
+
         setLoadingUsers(true);
 
         const data =
@@ -94,24 +112,31 @@ export default function HomePage() {
             ? data
             : data?.content || []
         );
+
       } catch (error) {
+
         console.error(
           "GET ALL USERS ERROR:",
           error
         );
+
       } finally {
+
         setLoadingUsers(false);
+
       }
     };
 
     loadUsers();
+
   }, []);
 
   // ============================================================
-  // CHECK FOLLOWING STATUS FOR USERS
+  // CHECK FOLLOWING STATUS
   // ============================================================
 
   useEffect(() => {
+
     if (
       !users.length ||
       !currentUserId
@@ -121,37 +146,29 @@ export default function HomePage() {
 
     const checkFollowingStatus =
       async () => {
+
         try {
+
           const statusEntries =
             await Promise.all(
+
               users
+
                 .filter(
                   (person) =>
                     person.id !==
                     currentUserId
                 )
+
                 .map(
                   async (person) => {
+
                     try {
+
                       const response =
                         await socialService.getFollowingStatus(
                           person.id
                         );
-
-                      /*
-                       * Backend may return:
-                       *
-                       * true
-                       * false
-                       *
-                       * OR
-                       *
-                       * { following: true }
-                       *
-                       * OR
-                       *
-                       * { isFollowing: true }
-                       */
 
                       const following =
                         typeof response ===
@@ -165,7 +182,9 @@ export default function HomePage() {
                         person.id,
                         following,
                       ];
+
                     } catch (error) {
+
                       console.error(
                         `Following status failed for ${person.id}:`,
                         error
@@ -185,85 +204,102 @@ export default function HomePage() {
               statusEntries
             )
           );
+
         } catch (error) {
+
           console.error(
             "CHECK FOLLOWING STATUS ERROR:",
             error
           );
+
         }
       };
 
     checkFollowingStatus();
+
   }, [users, currentUserId]);
 
   // ============================================================
   // FOLLOW / UNFOLLOW
   // ============================================================
 
-  const handleFollowToggle = async (
-    userId
-  ) => {
-    if (!userId) {
-      return;
-    }
+  const handleFollowToggle =
+    async (userId) => {
 
-    // Prevent following yourself
-    if (
-      userId === currentUserId
-    ) {
-      return;
-    }
+      if (!userId) {
+        return;
+      }
 
-    const currentlyFollowing =
-      followingUsers[userId] === true;
+      if (
+        userId === currentUserId
+      ) {
+        return;
+      }
 
-    try {
-      setFollowLoading(
-        (previous) => ({
-          ...previous,
-          [userId]: true,
-        })
-      );
+      const currentlyFollowing =
+        followingUsers[userId] === true;
 
-      if (currentlyFollowing) {
-        // UNFOLLOW
-        await socialService.unfollowUser(
-          userId
-        );
+      try {
 
-        setFollowingUsers(
-          (previous) => ({
-            ...previous,
-            [userId]: false,
-          })
-        );
-      } else {
-        // FOLLOW
-        await socialService.followUser(
-          userId
-        );
-
-        setFollowingUsers(
+        setFollowLoading(
           (previous) => ({
             ...previous,
             [userId]: true,
           })
         );
+
+        if (currentlyFollowing) {
+
+          // ----------------------------------------------------
+          // UNFOLLOW
+          // ----------------------------------------------------
+
+          await socialService.unfollowUser(
+            userId
+          );
+
+          setFollowingUsers(
+            (previous) => ({
+              ...previous,
+              [userId]: false,
+            })
+          );
+
+        } else {
+
+          // ----------------------------------------------------
+          // FOLLOW
+          // ----------------------------------------------------
+
+          await socialService.followUser(
+            userId
+          );
+
+          setFollowingUsers(
+            (previous) => ({
+              ...previous,
+              [userId]: true,
+            })
+          );
+        }
+
+      } catch (error) {
+
+        console.error(
+          "FOLLOW TOGGLE ERROR:",
+          error
+        );
+
+      } finally {
+
+        setFollowLoading(
+          (previous) => ({
+            ...previous,
+            [userId]: false,
+          })
+        );
       }
-    } catch (error) {
-      console.error(
-        "FOLLOW TOGGLE ERROR:",
-        error
-      );
-    } finally {
-      setFollowLoading(
-        (previous) => ({
-          ...previous,
-          [userId]: false,
-        })
-      );
-    }
-  };
+    };
 
   // ============================================================
   // APP / RESUME DATA
@@ -280,9 +316,13 @@ export default function HomePage() {
   // ============================================================
 
   useEffect(() => {
+
     if (resumeId) {
+
       fetchResumeData();
+
     } else {
+
       const storedResumeId =
         localStorage.getItem(
           "resume_id"
@@ -292,6 +332,7 @@ export default function HomePage() {
         fetchResumeData();
       }
     }
+
   }, [resumeId]);
 
   // ============================================================
@@ -314,6 +355,15 @@ export default function HomePage() {
     useState(null);
 
   // ============================================================
+  // SKILLCART COPILOT
+  // ============================================================
+
+  const [
+    isCopilotOpen,
+    setIsCopilotOpen,
+  ] = useState(false);
+
+  // ============================================================
   // JOB SIDEBAR
   // ============================================================
 
@@ -334,56 +384,18 @@ export default function HomePage() {
     useState([]);
 
   // ============================================================
-  // DAILY GOALS
-  // ============================================================
-
-  const [goals, setGoals] = useState([
-    {
-      id: 1,
-      text: "Tailor resume for target roles",
-      done: true,
-    },
-    {
-      id: 2,
-      text: "Review 3 AI Job Matches",
-      done: true,
-    },
-    {
-      id: 3,
-      text: "Apply to 1 referral opportunity",
-      done: false,
-    },
-  ]);
-
-  // ============================================================
-  // TOGGLE GOAL
-  // ============================================================
-
-  const toggleGoal = (id) => {
-    setGoals(
-      (previousGoals) =>
-        previousGoals.map(
-          (goal) =>
-            goal.id === id
-              ? {
-                  ...goal,
-                  done: !goal.done,
-                }
-              : goal
-        )
-    );
-  };
-
-  // ============================================================
   // FETCH JOBS
   // ============================================================
 
   useEffect(() => {
+
     let isMounted = true;
 
     const fetchTopJobs =
       async () => {
+
         try {
+
           setLoadingJobs(true);
 
           const response =
@@ -396,16 +408,21 @@ export default function HomePage() {
             isMounted &&
             response?.items
           ) {
+
             setFeaturedJobs(
               response.items.slice(0, 3)
             );
           }
+
         } catch (error) {
+
           console.warn(
             "Could not fetch top jobs:",
             error
           );
+
         } finally {
+
           if (isMounted) {
             setLoadingJobs(false);
           }
@@ -417,50 +434,47 @@ export default function HomePage() {
     return () => {
       isMounted = false;
     };
+
   }, []);
 
   // ============================================================
   // POST CREATED
   // ============================================================
 
-  const handlePostCreated = (
-    createdPost
-  ) => {
-    console.log(
-      "HOME PAGE - CREATED POST:",
-      createdPost
-    );
+  const handlePostCreated =
+    (createdPost) => {
 
-    setIsCreatePostOpen(false);
+      console.log(
+        "HOME PAGE - CREATED POST:",
+        createdPost
+      );
 
-    if (createdPost) {
-      setNewPost(createdPost);
-    }
-  };
+      setIsCreatePostOpen(false);
+
+      if (createdPost) {
+        setNewPost(createdPost);
+      }
+    };
 
   // ============================================================
   // CLOSE CREATE POST
   // ============================================================
 
-  const handleCloseCreatePost = () => {
-    setIsCreatePostOpen(false);
-  };
+  const handleCloseCreatePost =
+    () => {
 
-  // ============================================================
-  // COMPLETED GOALS
-  // ============================================================
+      setIsCreatePostOpen(false);
 
-  const completedGoalsCount =
-    goals.filter(
-      (goal) => goal.done
-    ).length;
+    };
 
   // ============================================================
   // USERNAME
   // ============================================================
 
   const getUsernameFromToken = () => {
+
     try {
+
       const token =
         localStorage.getItem(
           "token"
@@ -479,7 +493,9 @@ export default function HomePage() {
         payload?.username ||
         "User"
       );
+
     } catch (error) {
+
       console.error(
         "Could not read username from token:",
         error
@@ -520,6 +536,7 @@ export default function HomePage() {
   // ============================================================
 
   const makeFullUrl = (url) => {
+
     if (!url) {
       return "";
     }
@@ -574,6 +591,7 @@ export default function HomePage() {
   // ============================================================
 
   return (
+
     <div
       className="
         min-h-screen
@@ -586,11 +604,13 @@ export default function HomePage() {
         selection:text-[#19714e]
       "
     >
+
       {/* ======================================================
           HEADER
       ====================================================== */}
 
       <AppHeader />
+
 
       {/* ======================================================
           MAIN
@@ -609,6 +629,7 @@ export default function HomePage() {
           space-y-6
         "
       >
+
         {/* ====================================================
             THREE COLUMN
         ==================================================== */}
@@ -622,6 +643,7 @@ export default function HomePage() {
             items-start
           "
         >
+
           {/* ==================================================
               LEFT SIDEBAR
           ================================================== */}
@@ -651,6 +673,7 @@ export default function HomePage() {
               scrollbar-none
             "
           >
+
             {/* ==================================================
                 PROFILE CARD
             ================================================== */}
@@ -665,6 +688,7 @@ export default function HomePage() {
                 shadow-xs
               "
             >
+
               {/* COVER */}
 
               <div
@@ -687,6 +711,7 @@ export default function HomePage() {
                   relative
                 "
               >
+
                 {/* AVATAR */}
 
                 <button
@@ -724,6 +749,7 @@ export default function HomePage() {
                   {avatarText}
                 </button>
 
+
                 {/* USERNAME */}
 
                 <button
@@ -743,6 +769,7 @@ export default function HomePage() {
                     w-full
                   "
                 >
+
                   <span
                     className="
                       font-bold
@@ -763,11 +790,14 @@ export default function HomePage() {
                   >
                     View profile
                   </span>
+
                 </button>
+
 
                 {/* PROFILE DETAILS */}
 
                 {showProfile && (
+
                   <motion.div
                     initial={{
                       opacity: 0,
@@ -784,6 +814,7 @@ export default function HomePage() {
                       border-[#dfe7e2]
                     "
                   >
+
                     {/* CLOSE */}
 
                     <div
@@ -794,6 +825,7 @@ export default function HomePage() {
                         mb-4
                       "
                     >
+
                       <h3
                         className="
                           font-bold
@@ -819,11 +851,14 @@ export default function HomePage() {
                       >
                         <X size={15} />
                       </button>
+
                     </div>
+
 
                     {/* NAME */}
 
                     <div className="mb-4">
+
                       <p
                         className="
                           text-[10px]
@@ -846,15 +881,16 @@ export default function HomePage() {
                       >
                         {parsedName}
                       </p>
+
                     </div>
+
 
                     {/* LINKEDIN */}
 
                     {linkedinUrl && (
+
                       <a
-                        href={
-                          linkedinUrl
-                        }
+                        href={linkedinUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="
@@ -872,6 +908,7 @@ export default function HomePage() {
                           mb-2
                         "
                       >
+
                         <ExternalLink
                           size={16}
                           className="text-[#19714e]"
@@ -883,6 +920,7 @@ export default function HomePage() {
                             flex-1
                           "
                         >
+
                           <p
                             className="
                               text-[10px]
@@ -903,17 +941,20 @@ export default function HomePage() {
                           >
                             {linkedin}
                           </p>
+
                         </div>
+
                       </a>
+
                     )}
+
 
                     {/* PORTFOLIO */}
 
                     {portfolioUrl && (
+
                       <a
-                        href={
-                          portfolioUrl
-                        }
+                        href={portfolioUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="
@@ -931,6 +972,7 @@ export default function HomePage() {
                           mb-4
                         "
                       >
+
                         <Globe
                           size={16}
                           className="text-[#19714e]"
@@ -942,6 +984,7 @@ export default function HomePage() {
                             flex-1
                           "
                         >
+
                           <p
                             className="
                               text-[10px]
@@ -962,15 +1005,21 @@ export default function HomePage() {
                           >
                             {portfolio}
                           </p>
+
                         </div>
+
                       </a>
+
                     )}
+
 
                     {/* SKILLS */}
 
                     {parsedSkills.length >
                       0 && (
+
                       <div>
+
                         <div
                           className="
                             flex
@@ -979,6 +1028,7 @@ export default function HomePage() {
                             mb-2
                           "
                         >
+
                           <Code2
                             size={14}
                             className="text-[#19714e]"
@@ -995,7 +1045,9 @@ export default function HomePage() {
                           >
                             Skills
                           </span>
+
                         </div>
+
 
                         <div
                           className="
@@ -1004,11 +1056,13 @@ export default function HomePage() {
                             gap-1.5
                           "
                         >
+
                           {parsedSkills.map(
                             (
                               skill,
                               index
                             ) => (
+
                               <span
                                 key={`${skill}-${index}`}
                                 className="
@@ -1025,15 +1079,21 @@ export default function HomePage() {
                               >
                                 {skill}
                               </span>
+
                             )
                           )}
+
                         </div>
+
                       </div>
+
                     )}
+
 
                     {/* NO RESUME DATA */}
 
                     {!resumeData && (
+
                       <p
                         className="
                           text-xs
@@ -1045,17 +1105,26 @@ export default function HomePage() {
                         is not available
                         yet.
                       </p>
+
                     )}
+
                   </motion.div>
+
                 )}
+
               </div>
+
             </div>
 
+
             {/* ==================================================
-                DAILY GOALS
+                SKILLCART COPILOT
             ================================================== */}
 
-            <div
+            <motion.div
+              whileHover={{
+                y: -2,
+              }}
               className="
                 bg-white
                 border
@@ -1063,122 +1132,161 @@ export default function HomePage() {
                 rounded-3xl
                 p-5
                 shadow-xs
-                space-y-3
+                overflow-hidden
+                relative
               "
             >
+
+              {/* DECORATIVE GLOW */}
+
               <div
                 className="
+                  absolute
+                  -right-10
+                  -top-10
+                  w-28
+                  h-28
+                  rounded-full
+                  bg-[#dff8eb]
+                  blur-2xl
+                  opacity-70
+                "
+              />
+
+
+              {/* HEADER */}
+
+              <div
+                className="
+                  relative
                   flex
-                  items-center
-                  justify-between
-                  border-b
-                  border-[#dfe7e2]/70
-                  pb-2.5
+                  items-start
+                  gap-3
                 "
               >
-                <h4
+
+                {/* ICON */}
+
+                <div
                   className="
-                    font-bold
-                    text-xs
-                    uppercase
-                    tracking-wider
-                    text-[#12221d]
+                    w-11
+                    h-11
+                    rounded-2xl
+                    bg-gradient-to-br
+                    from-[#123c2c]
+                    to-[#19714e]
+                    text-[#b9ef84]
                     flex
                     items-center
-                    gap-1.5
+                    justify-center
+                    shrink-0
+                    shadow-sm
                   "
                 >
-                  <Target
-                    size={15}
-                    className="text-[#19714e]"
+
+                  <Sparkles
+                    size={20}
                   />
 
-                  Daily Goals
-                </h4>
+                </div>
 
-                <span
+
+                {/* TEXT */}
+
+                <div
                   className="
-                    text-[11px]
-                    font-bold
-                    text-[#19714e]
-                    bg-[#dff8eb]
-                    px-2
-                    py-0.5
-                    rounded-full
+                    min-w-0
+                    flex-1
                   "
                 >
-                  {completedGoalsCount}/
-                  {goals.length} Done
-                </span>
-              </div>
 
-              <div className="space-y-2">
-                {goals.map((goal) => (
-                  <div
-                    key={goal.id}
-                    onClick={() =>
-                      toggleGoal(
-                        goal.id
-                      )
-                    }
-                    className={`
-                      flex
-                      items-center
-                      gap-2.5
-                      p-2.5
-                      rounded-2xl
-                      border
-                      transition-all
-                      cursor-pointer
-                      text-xs
-
-                      ${
-                        goal.done
-                          ? "bg-[#dff8eb]/50 border-[#19714e]/30 text-[#123c2c] font-semibold"
-                          : "bg-[#f7faf8] border-[#dfe7e2] text-[#68756f] hover:bg-white"
-                      }
-                    `}
+                  <p
+                    className="
+                      text-[10px]
+                      uppercase
+                      tracking-[0.16em]
+                      font-bold
+                      text-[#19714e]
+                    "
                   >
-                    <div
-                      className={`
-                        w-4
-                        h-4
-                        rounded-md
-                        flex
-                        items-center
-                        justify-center
-                        shrink-0
-                        border
+                    AI Career Assistant
+                  </p>
 
-                        ${
-                          goal.done
-                            ? "bg-[#19714e] border-[#19714e] text-white"
-                            : "border-[#68756f]/50"
-                        }
-                      `}
-                    >
-                      {goal.done && (
-                        <Check
-                          size={12}
-                          strokeWidth={3}
-                        />
-                      )}
-                    </div>
+                  <h4
+                    className="
+                      text-base
+                      font-bold
+                      text-[#10231b]
+                      mt-0.5
+                    "
+                  >
+                    SkillCart Copilot
+                  </h4>
 
-                    <span
-                      className={
-                        goal.done
-                          ? "line-through text-[#68756f]"
-                          : "font-medium"
-                      }
-                    >
-                      {goal.text}
-                    </span>
-                  </div>
-                ))}
+                  <p
+                    className="
+                      text-xs
+                      leading-5
+                      text-[#68756f]
+                      mt-1
+                    "
+                  >
+                    Get personalized help
+                    with your resume,
+                    skills and career.
+                  </p>
+
+                </div>
+
               </div>
-            </div>
+
+
+              {/* OPEN COPILOT */}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setIsCopilotOpen(true)
+                }
+                className="
+                  relative
+                  w-full
+                  mt-4
+                  py-3
+                  px-4
+                  rounded-2xl
+                  bg-[#123c2c]
+                  hover:bg-[#19714e]
+                  text-white
+                  text-xs
+                  font-bold
+                  flex
+                  items-center
+                  justify-center
+                  gap-2
+                  transition-all
+                  shadow-sm
+                  hover:shadow-md
+                "
+              >
+
+                <Sparkles
+                  size={15}
+                  className="text-[#b9ef84]"
+                />
+
+                Open Copilot
+
+                <ChevronRight
+                  size={15}
+                />
+
+              </button>
+
+            </motion.div>
+
           </motion.aside>
+
 
           {/* ==================================================
               CENTER COLUMN
@@ -1193,7 +1301,10 @@ export default function HomePage() {
               sm:pb-0
             "
           >
-            {/* CREATE POST */}
+
+            {/* ==================================================
+                CREATE POST
+            ================================================== */}
 
             <motion.div
               initial={{
@@ -1228,6 +1339,7 @@ export default function HomePage() {
                 group
               "
             >
+
               <div
                 className="
                   flex
@@ -1237,6 +1349,9 @@ export default function HomePage() {
                   min-w-0
                 "
               >
+
+                {/* AVATAR */}
+
                 <div
                   className="
                     w-9
@@ -1262,6 +1377,9 @@ export default function HomePage() {
                     .toUpperCase()}
                 </div>
 
+
+                {/* INPUT LOOK */}
+
                 <div
                   className="
                     flex-1
@@ -1283,7 +1401,11 @@ export default function HomePage() {
                   Start a post, share photos
                   or job referrals...
                 </div>
+
               </div>
+
+
+              {/* ACTIONS */}
 
               <div
                 className="
@@ -1293,13 +1415,17 @@ export default function HomePage() {
                   shrink-0
                 "
               >
+
                 <button
                   type="button"
                   onClick={(event) => {
+
                     event.stopPropagation();
+
                     setIsCreatePostOpen(
                       true
                     );
+
                   }}
                   className="
                     p-2.5
@@ -1311,16 +1437,22 @@ export default function HomePage() {
                     border-[#dfe7e2]
                   "
                 >
-                  <ImageIcon size={16} />
+                  <ImageIcon
+                    size={16}
+                  />
                 </button>
+
 
                 <button
                   type="button"
                   onClick={(event) => {
+
                     event.stopPropagation();
+
                     setIsCreatePostOpen(
                       true
                     );
+
                   }}
                   className="
                     px-4
@@ -1336,20 +1468,31 @@ export default function HomePage() {
                     gap-1.5
                   "
                 >
+
                   <Plus
                     size={15}
                     className="text-[#b9ef84]"
                   />
 
                   Create Post
+
                 </button>
+
               </div>
+
             </motion.div>
 
-            {/* FEED */}
 
-            <Feed newPost={newPost} />
+            {/* ==================================================
+                COMMUNITY FEED
+            ================================================== */}
+
+            <Feed
+              newPost={newPost}
+            />
+
           </section>
+
 
           {/* ==================================================
               RIGHT SIDEBAR
@@ -1368,6 +1511,7 @@ export default function HomePage() {
               scrollbar-none
             "
           >
+
             {/* ==================================================
                 PEOPLE TO FOLLOW
             ================================================== */}
@@ -1383,6 +1527,7 @@ export default function HomePage() {
                 space-y-3
               "
             >
+
               <div
                 className="
                   flex
@@ -1393,6 +1538,7 @@ export default function HomePage() {
                   border-[#dfe7e2]/70
                 "
               >
+
                 <h4
                   className="
                     font-bold
@@ -1404,11 +1550,14 @@ export default function HomePage() {
                 >
                   People to Follow
                 </h4>
+
               </div>
+
 
               {/* LOADING */}
 
               {loadingUsers && (
+
                 <div
                   className="
                     py-5
@@ -1420,13 +1569,16 @@ export default function HomePage() {
                 >
                   Loading people...
                 </div>
+
               )}
+
 
               {/* NO USERS */}
 
               {!loadingUsers &&
                 otherUsers.length ===
                   0 && (
+
                   <div
                     className="
                       py-5
@@ -1437,7 +1589,9 @@ export default function HomePage() {
                   >
                     No other users found.
                   </div>
+
                 )}
+
 
               {/* USERS */}
 
@@ -1445,6 +1599,7 @@ export default function HomePage() {
                 otherUsers
                   .slice(0, 5)
                   .map((person) => {
+
                     const personName =
                       person.username ||
                       "User";
@@ -1460,6 +1615,7 @@ export default function HomePage() {
                       ] === true;
 
                     return (
+
                       <div
                         key={person.id}
                         className="
@@ -1474,6 +1630,7 @@ export default function HomePage() {
                           border-[#dfe7e2]
                         "
                       >
+
                         {/* USER */}
 
                         <div
@@ -1484,6 +1641,7 @@ export default function HomePage() {
                             min-w-0
                           "
                         >
+
                           <div
                             className="
                               w-9
@@ -1508,7 +1666,13 @@ export default function HomePage() {
                               .toUpperCase()}
                           </div>
 
-                          <div className="min-w-0">
+
+                          <div
+                            className="
+                              min-w-0
+                            "
+                          >
+
                             <p
                               className="
                                 text-xs
@@ -1533,8 +1697,11 @@ export default function HomePage() {
                                 person.email
                               }
                             </p>
+
                           </div>
+
                         </div>
+
 
                         {/* FOLLOW BUTTON */}
 
@@ -1566,16 +1733,22 @@ export default function HomePage() {
                             }
                           `}
                         >
+
                           {isLoading
                             ? "..."
                             : isFollowing
                             ? "Following"
                             : "Follow"}
+
                         </button>
+
                       </div>
+
                     );
                   })}
+
             </div>
+
 
             {/* ==================================================
                 LIVE JOB REFERRALS
@@ -1592,6 +1765,7 @@ export default function HomePage() {
                 space-y-3
               "
             >
+
               <div
                 className="
                   flex
@@ -1602,6 +1776,7 @@ export default function HomePage() {
                   border-[#dfe7e2]/70
                 "
               >
+
                 <h4
                   className="
                     font-bold
@@ -1614,6 +1789,7 @@ export default function HomePage() {
                     gap-1.5
                   "
                 >
+
                   <Zap
                     size={16}
                     className="
@@ -1623,7 +1799,9 @@ export default function HomePage() {
                   />
 
                   Live Job Referrals
+
                 </h4>
+
 
                 <Link
                   to="/jobs"
@@ -1637,15 +1815,22 @@ export default function HomePage() {
                     gap-0.5
                   "
                 >
+
                   View All
 
-                  <ChevronRight size={12} />
+                  <ChevronRight
+                    size={12}
+                  />
+
                 </Link>
+
               </div>
+
 
               {/* LOADING JOBS */}
 
               {loadingJobs && (
+
                 <div
                   className="
                     py-6
@@ -1657,16 +1842,25 @@ export default function HomePage() {
                 >
                   Syncing live opportunities...
                 </div>
+
               )}
+
 
               {/* JOBS */}
 
               {!loadingJobs &&
                 featuredJobs.length >
                   0 && (
-                  <div className="space-y-2.5">
+
+                  <div
+                    className="
+                      space-y-2.5
+                    "
+                  >
+
                     {featuredJobs.map(
                       (job) => (
+
                         <motion.div
                           whileHover={{
                             scale: 1.02,
@@ -1695,6 +1889,7 @@ export default function HomePage() {
                             space-y-2
                           "
                         >
+
                           <div
                             className="
                               flex
@@ -1703,7 +1898,9 @@ export default function HomePage() {
                               gap-2
                             "
                           >
+
                             <div>
+
                               <h5
                                 className="
                                   font-bold
@@ -1729,7 +1926,9 @@ export default function HomePage() {
                                   job.company_name
                                 }
                               </p>
+
                             </div>
+
 
                             <span
                               className="
@@ -1750,7 +1949,9 @@ export default function HomePage() {
                                 "Remote"
                               }
                             </span>
+
                           </div>
+
 
                           <div
                             className="
@@ -1765,7 +1966,9 @@ export default function HomePage() {
                               border-[#dfe7e2]/50
                             "
                           >
+
                             <span>
+
                               ₹
                               {job.salary_min
                                 ? (
@@ -1775,7 +1978,9 @@ export default function HomePage() {
                                     1
                                   )
                                 : "0"}
+
                               L - ₹
+
                               {job.salary_max
                                 ? (
                                     job.salary_max /
@@ -1784,8 +1989,11 @@ export default function HomePage() {
                                     1
                                   )
                                 : "0"}
+
                               L / yr
+
                             </span>
+
 
                             <span
                               className="
@@ -1796,18 +2004,25 @@ export default function HomePage() {
                             >
                               Apply →
                             </span>
+
                           </div>
+
                         </motion.div>
+
                       )
                     )}
+
                   </div>
+
                 )}
+
 
               {/* NO JOBS */}
 
               {!loadingJobs &&
                 featuredJobs.length ===
                   0 && (
+
                   <div
                     className="
                       py-6
@@ -1819,11 +2034,17 @@ export default function HomePage() {
                     No live opportunities
                     found.
                   </div>
+
                 )}
+
             </div>
+
           </aside>
+
         </div>
+
       </main>
+
 
       {/* ======================================================
           MOBILE CREATE POST BUTTON
@@ -1860,6 +2081,7 @@ export default function HomePage() {
           border-[#b9ef84]/40
         "
       >
+
         <Plus
           size={18}
           className="text-[#b9ef84]"
@@ -1873,14 +2095,18 @@ export default function HomePage() {
         >
           Create Post
         </span>
+
       </motion.button>
+
 
       {/* ======================================================
           CREATE POST MODAL
       ====================================================== */}
 
       <CreatePostModal
-        isOpen={isCreatePostOpen}
+        isOpen={
+          isCreatePostOpen
+        }
         onClose={
           handleCloseCreatePost
         }
@@ -1889,16 +2115,20 @@ export default function HomePage() {
         }
       />
 
+
       {/* ======================================================
           JOB DETAIL MODAL
       ====================================================== */}
 
       {selectedJob && (
+
         <JobDetailModal
           job={selectedJob}
+
           onClose={() =>
             setSelectedJob(null)
           }
+
           isSaved={savedJobs.some(
             (savedJob) =>
               (savedJob.id ||
@@ -1908,43 +2138,66 @@ export default function HomePage() {
                 selectedJob._id
               )
           )}
-          onToggleSave={(
-            jobToSave
-          ) => {
-            const jobId =
-              jobToSave.id ||
-              jobToSave._id;
 
-            setSavedJobs(
-              (previousJobs) => {
-                const alreadySaved =
-                  previousJobs.some(
-                    (savedJob) =>
-                      (
-                        savedJob.id ||
-                        savedJob._id
-                      ) === jobId
-                  );
+          onToggleSave={
+            (jobToSave) => {
 
-                if (alreadySaved) {
-                  return previousJobs.filter(
-                    (savedJob) =>
-                      (
-                        savedJob.id ||
-                        savedJob._id
-                      ) !== jobId
-                  );
+              const jobId =
+                jobToSave.id ||
+                jobToSave._id;
+
+              setSavedJobs(
+                (previousJobs) => {
+
+                  const alreadySaved =
+                    previousJobs.some(
+                      (savedJob) =>
+                        (
+                          savedJob.id ||
+                          savedJob._id
+                        ) === jobId
+                    );
+
+                  if (
+                    alreadySaved
+                  ) {
+
+                    return previousJobs.filter(
+                      (savedJob) =>
+                        (
+                          savedJob.id ||
+                          savedJob._id
+                        ) !== jobId
+                    );
+
+                  }
+
+                  return [
+                    ...previousJobs,
+                    jobToSave,
+                  ];
                 }
-
-                return [
-                  ...previousJobs,
-                  jobToSave,
-                ];
-              }
-            );
-          }}
+              );
+            }
+          }
         />
+
       )}
+
+
+      {/* ======================================================
+          SKILLCART COPILOT
+      ====================================================== */}
+
+      <Copilot
+        isOpen={
+          isCopilotOpen
+        }
+        onClose={() =>
+          setIsCopilotOpen(false)
+        }
+      />
+
     </div>
   );
 }
