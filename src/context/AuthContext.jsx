@@ -16,7 +16,11 @@ export function AuthProvider({ children }) {
   // ============================================================
 
   const [token, setToken] = useState(() => {
-    return localStorage.getItem("token") || null;
+    const saved = localStorage.getItem("token");
+    if (!saved || saved === "undefined" || saved === "null" || !saved.trim()) {
+      return null;
+    }
+    return saved;
   });
 
   // ============================================================
@@ -25,7 +29,10 @@ export function AuthProvider({ children }) {
 
   const [isAuthenticated, setIsAuthenticated] =
     useState(() => {
-      return !!localStorage.getItem("token");
+      const saved = localStorage.getItem("token");
+      return Boolean(
+        saved && saved !== "undefined" && saved !== "null" && saved.trim()
+      );
     });
 
   // ============================================================

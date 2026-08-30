@@ -7,8 +7,14 @@ async function request(
 ) {
   const url = `${BASE_URL}${endpoint}`;
 
+  const rawToken = localStorage.getItem("token");
   const token =
-    localStorage.getItem("token");
+    rawToken &&
+    rawToken !== "undefined" &&
+    rawToken !== "null" &&
+    rawToken.trim() !== ""
+      ? rawToken
+      : null;
 
   const isFormData =
     options.body instanceof FormData;

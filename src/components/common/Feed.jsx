@@ -19,33 +19,36 @@ import PostCard from "./PostCard";
 
 function getUserIdFromToken() {
   try {
-    const token =
-      localStorage.getItem("token");
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      try {
+        const userObj = JSON.parse(savedUser);
+        const id = userObj?.id || userObj?.userId;
+        if (id) return id;
+      } catch (e) {}
+    }
 
-    if (!token) {
+    const token = localStorage.getItem("token");
+    if (
+      !token ||
+      typeof token !== "string" ||
+      !token.includes(".") ||
+      token === "null" ||
+      token === "undefined"
+    ) {
       return null;
     }
 
-    const payload =
-      JSON.parse(
-        atob(token.split(".")[1])
-      );
-
-    console.log(
-      "JWT PAYLOAD:",
-      payload
-    );
+    const payload = JSON.parse(atob(token.split(".")[1]));
 
     return (
       payload?.userId ||
+      payload?.id ||
+      (payload?.sub && !isNaN(payload?.sub) ? payload?.sub : payload?.sub) ||
       null
     );
   } catch (error) {
-    console.error(
-      "JWT DECODE ERROR:",
-      error
-    );
-
+    console.error("JWT DECODE ERROR:", error);
     return null;
   }
 }
@@ -89,7 +92,7 @@ export default function Feed({
       setError("");
 
       // ======================================================
-      // GET USER UUID FROM JWT
+      // GET USER UUID FROM JWT OR LOCALSTORAGE
       // ======================================================
 
       const userId =
@@ -99,12 +102,6 @@ export default function Feed({
         "CURRENT USER ID:",
         userId
       );
-
-      if (!userId) {
-        throw new Error(
-          "User ID not found in authentication token."
-        );
-      }
 
       // ======================================================
       // REQUEST 1
@@ -130,11 +127,6 @@ export default function Feed({
           "FOLLOWING FEED FAILED:",
           feedError
         );
-
-        // We don't stop here.
-        //
-        // Even if following feed fails,
-        // we still want the user's own posts.
       }
 
       // ======================================================
@@ -145,25 +137,25 @@ export default function Feed({
 
       let ownPostsResponse = null;
 
-      try {
-        ownPostsResponse =
-          await socialService.getUserPosts(
-            userId,
-            0,
-            50
+      if (userId) {
+        try {
+          ownPostsResponse =
+            await socialService.getUserPosts(
+              userId,
+              0,
+              50
+            );
+
+          console.log(
+            "MY POSTS RESPONSE:",
+            ownPostsResponse
           );
-
-        console.log(
-          "MY POSTS RESPONSE:",
-          ownPostsResponse
-        );
-      } catch (ownPostsError) {
-        console.error(
-          "MY POSTS ERROR:",
-          ownPostsError
-        );
-
-        throw ownPostsError;
+        } catch (ownPostsError) {
+          console.warn(
+            "MY POSTS ERROR:",
+            ownPostsError
+          );
+        }
       }
 
       // ======================================================

@@ -58,29 +58,25 @@ export default function HomePage() {
   // ============================================================
 
   const getCurrentUserId = () => {
-
     try {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          const userObj = JSON.parse(savedUser);
+          const id = userObj?.id || userObj?.userId;
+          if (id) return id;
+        } catch (e) {}
+      }
 
-      const token =
-        localStorage.getItem("token");
-
-      if (!token) {
+      const token = localStorage.getItem("token");
+      if (!token || typeof token !== "string" || !token.includes(".") || token === "null" || token === "undefined") {
         return null;
       }
 
-      const payload = JSON.parse(
-        atob(token.split(".")[1])
-      );
-
-      return payload?.userId || null;
-
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload?.userId || payload?.id || (payload?.sub && !isNaN(payload?.sub) ? payload?.sub : null) || null;
     } catch (error) {
-
-      console.error(
-        "Could not get current user ID:",
-        error
-      );
-
+      console.error("Could not get current user ID:", error);
       return null;
     }
   };
@@ -489,33 +485,30 @@ export default function HomePage() {
   const getUsernameFromToken = () => {
 
     try {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          const userObj = JSON.parse(savedUser);
+          const name = userObj?.username || userObj?.name;
+          if (name) return name;
+        } catch (e) {}
+      }
 
-      const token =
-        localStorage.getItem(
-          "token"
-        );
-
-      if (!token) {
+      const token = localStorage.getItem("token");
+      if (!token || typeof token !== "string" || !token.includes(".") || token === "null" || token === "undefined") {
         return "User";
       }
 
-      const payload = JSON.parse(
-        atob(token.split(".")[1])
-      );
+      const payload = JSON.parse(atob(token.split(".")[1]));
 
       return (
-        payload?.sub ||
         payload?.username ||
+        payload?.name ||
+        payload?.sub ||
         "User"
       );
-
     } catch (error) {
-
-      console.error(
-        "Could not read username from token:",
-        error
-      );
-
+      console.error("Could not read username from token:", error);
       return "User";
     }
   };

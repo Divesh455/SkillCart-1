@@ -359,61 +359,75 @@ export default function PostCard({
   // ============================================================
 
   const handleLike = async () => {
-
-    if (
-      likeLoading ||
-      !post?.id
-    ) {
+    if (likeLoading || !post?.id) {
       return;
     }
 
-    try {
+    const previousLiked = liked;
+    const previousCount = likeCount;
 
+    try {
       setLikeLoading(true);
 
       if (liked) {
-
-        await socialService.unlikePost(
-          post.id
-        );
-
+        // Optimistically update UI so unliking happens immediately on click
         setLiked(false);
+        setLikeCount((count) => Math.max(0, count - 1));
 
-        setLikeCount(
-          (count) =>
-            Math.max(
-              0,
-              count - 1
-            )
-        );
-
+        try {
+          await socialService.unlikePost(post.id);
+        } catch (err) {
+          console.warn("Unlike request warning:", err);
+          try {
+            await socialApi.post(`/api/social/posts/${post.id}/unlike`);
+          } catch (e) {}
+        }
       } else {
-
-        await socialService.likePost(
-          post.id
-        );
-
+        // Optimistically update UI so liking happens immediately on click
         setLiked(true);
+        setLikeCount((count) => count + 1);
 
-        setLikeCount(
-          (count) =>
-            count + 1
-        );
+        try {
+          await socialService.likePost(post.id);
+        } catch (err) {
+          console.warn("Like request warning:", err);
+        }
       }
-
     } catch (error) {
-
-      console.error(
-        "LIKE / UNLIKE ERROR:",
-        error
-      );
-
+      console.error("LIKE / UNLIKE ERROR:", error);
+      setLiked(previousLiked);
+      setLikeCount(previousCount);
     } finally {
-
       setLikeLoading(false);
-
     }
   };
+
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
+
+  const handleDeleteComment = async (commentId) => {
+    if (!commentId) return;
+
+    try {
+      setDeletingCommentId(commentId);
+
+      setComments((current) =>
+        current.filter(
+          (c) => String(c.id || c._id) !== String(commentId)
+        )
+      );
+
+      setCommentCount((count) => Math.max(0, count - 1));
+
+      await socialService.deleteComment(commentId).catch((err) => {
+        console.warn("Failed to delete comment on backend:", err);
+      });
+    } catch (err) {
+      console.error("DELETE COMMENT ERROR:", err);
+    } finally {
+      setDeletingCommentId(null);
+    }
+  };
+
 
   // ============================================================
   // LOAD COMMENTS
@@ -1260,15 +1274,44 @@ export default function PostCard({
                               py-2.5
                             "
                           >
-                            <p
-                              className="
-                                text-xs
-                                font-bold
-                                text-[#12221d]
-                              "
-                            >
-                              {authorName}
-                            </p>
+                            <div className="flex items-center justify-between gap-2">
+                              <p
+                                className="
+                                  text-xs
+                                  font-bold
+                                  text-[#12221d]
+                                "
+                              >
+                                {authorName}
+                              </p>
+
+                              {isMyComment && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleDeleteComment(comment.id || comment._id)
+                                  }
+                                  disabled={
+                                    deletingCommentId ===
+                                    (comment.id || comment._id)
+                                  }
+                                  title="Delete your comment"
+                                  className="
+                                    text-red-500
+                                    hover:text-red-700
+                                    hover:bg-red-50
+                                    p-1
+                                    rounded-lg
+                                    transition-colors
+                                    cursor-pointer
+                                    disabled:opacity-50
+                                    shrink-0
+                                  "
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              )}
+                            </div>
 
                             <p
                               className="
