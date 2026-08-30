@@ -5,6 +5,7 @@ import {
 } from "react";
 
 import authService from "../services/authService";
+import { extractRidFromResponse } from "../services/resumeService";
 
 const AuthContext = createContext(null);
 
@@ -66,6 +67,7 @@ export function AuthProvider({ children }) {
   const [resumeId, setResumeId] = useState(() => {
     return (
       localStorage.getItem("res_id") ||
+      localStorage.getItem("resume_id") ||
       null
     );
   });
@@ -147,15 +149,30 @@ export function AuthProvider({ children }) {
       //
       // ========================================================
 
+      const existingStoredRid =
+        localStorage.getItem("res_id") ||
+        localStorage.getItem("resume_id") ||
+        null;
+
       const resumeIdFromLogin =
+        extractRidFromResponse(data) ||
         data?.Rid ||
         data?.rid ||
         data?.res_id ||
         data?.resumeId ||
+        data?.user?.Rid ||
+        data?.user?.rid ||
+        data?.user?.res_id ||
+        data?.user?.resume_id ||
         data?.data?.Rid ||
         data?.data?.rid ||
         data?.data?.res_id ||
         data?.data?.resumeId ||
+        data?.data?.user?.Rid ||
+        data?.data?.user?.rid ||
+        data?.data?.user?.res_id ||
+        data?.data?.user?.resume_id ||
+        existingStoredRid ||
         null;
 
       console.log(
@@ -249,10 +266,21 @@ export function AuthProvider({ children }) {
           )
         );
 
+        localStorage.setItem(
+          "resume_id",
+          String(
+            resumeIdFromLogin
+          )
+        );
+
       } else {
 
         localStorage.removeItem(
           "res_id"
+        );
+
+        localStorage.removeItem(
+          "resume_id"
         );
       }
 
@@ -368,6 +396,10 @@ export function AuthProvider({ children }) {
 
     localStorage.removeItem(
       "res_id"
+    );
+
+    localStorage.removeItem(
+      "resume_id"
     );
 
     localStorage.setItem(

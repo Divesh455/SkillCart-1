@@ -22,6 +22,7 @@ import Copilot from "../../components/common/Copilot";
 
 import socialService from "../../services/socialService";
 import jobService from "../../services/jobService";
+import saveJobService from "../../services/savejobs";
 
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
@@ -382,6 +383,20 @@ export default function HomePage() {
 
   const [savedJobs, setSavedJobs] =
     useState([]);
+
+  useEffect(() => {
+    const fetchSaved = async () => {
+      try {
+        const jobs = await saveJobService.getSavedJobs();
+        if (Array.isArray(jobs)) {
+          setSavedJobs(jobs);
+        }
+      } catch (err) {
+        console.warn("HomePage failed to fetch saved jobs:", err);
+      }
+    };
+    fetchSaved();
+  }, []);
 
   // ============================================================
   // FETCH JOBS
@@ -2131,53 +2146,41 @@ export default function HomePage() {
 
           isSaved={savedJobs.some(
             (savedJob) =>
-              (savedJob.id ||
-                savedJob._id) ===
-              (
-                selectedJob.id ||
-                selectedJob._id
-              )
+              String(savedJob.id ?? savedJob._id ?? savedJob.job_id) ===
+              String(selectedJob.id ?? selectedJob._id ?? selectedJob.job_id)
           )}
 
           onToggleSave={
-            (jobToSave) => {
-
+            async (jobToSave) => {
+              if (!jobToSave) return;
               const jobId =
-                jobToSave.id ||
-                jobToSave._id;
+                jobToSave.id ??
+                jobToSave._id ??
+                jobToSave.job_id;
 
-              setSavedJobs(
-                (previousJobs) => {
+              if (jobId === undefined || jobId === null || jobId === "") return;
 
-                  const alreadySaved =
-                    previousJobs.some(
-                      (savedJob) =>
-                        (
-                          savedJob.id ||
-                          savedJob._id
-                        ) === jobId
-                    );
-
-                  if (
-                    alreadySaved
-                  ) {
-
-                    return previousJobs.filter(
-                      (savedJob) =>
-                        (
-                          savedJob.id ||
-                          savedJob._id
-                        ) !== jobId
-                    );
-
-                  }
-
-                  return [
-                    ...previousJobs,
-                    jobToSave,
-                  ];
-                }
+              const isAlreadySaved = savedJobs.some(
+                (savedJob) =>
+                  String(savedJob.id ?? savedJob._id ?? savedJob.job_id) === String(jobId)
               );
+
+              try {
+                if (isAlreadySaved) {
+                  await saveJobService.unsaveJob(jobId);
+                  setSavedJobs((previousJobs) =>
+                    previousJobs.filter(
+                      (savedJob) =>
+                        String(savedJob.id ?? savedJob._id ?? savedJob.job_id) !== String(jobId)
+                    )
+                  );
+                } else {
+                  await saveJobService.saveJob(jobId);
+                  setSavedJobs((previousJobs) => [...previousJobs, jobToSave]);
+                }
+              } catch (err) {
+                console.error("Failed to toggle save on HomePage:", err);
+              }
             }
           }
         />

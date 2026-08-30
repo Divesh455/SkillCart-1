@@ -365,13 +365,15 @@ export default function ForYouPage() {
       direction === "right" &&
       currentJob
     ) {
+      const currentId = getJobId(currentJob);
+      if (currentId !== undefined && currentId !== null) {
+        saveJobService.saveJob(currentId).catch((err) => {
+          console.error("Failed to save job on backend:", err);
+        });
+      }
+
       setSavedJobs(
         (previousJobs) => {
-          const currentId =
-            getJobId(
-              currentJob
-            );
-
           const alreadySaved =
             previousJobs.some(
               (savedJob) =>
@@ -413,7 +415,7 @@ export default function ForYouPage() {
   // ==========================================================
 
   const handleToggleSaveJob =
-    (jobToToggle) => {
+    async (jobToToggle) => {
       if (!jobToToggle) {
         return;
       }
@@ -425,38 +427,34 @@ export default function ForYouPage() {
 
       if (
         jobId === undefined ||
-        jobId === null
+        jobId === null ||
+        jobId === ""
       ) {
         return;
       }
 
-      setSavedJobs(
-        (previousJobs) => {
-          const exists =
-            previousJobs.some(
-              (job) =>
-                String(
-                  getJobId(job)
-                ) ===
-                String(jobId)
-            );
+      const isAlreadySaved = savedJobs.some(
+        (job) => String(getJobId(job)) === String(jobId)
+      );
 
-          if (exists) {
-            return previousJobs.filter(
-              (job) =>
-                String(
-                  getJobId(job)
-                ) !==
-                String(jobId)
-            );
-          }
-
-          return [
+      try {
+        if (isAlreadySaved) {
+          await saveJobService.unsaveJob(jobId);
+          setSavedJobs((previousJobs) =>
+            previousJobs.filter(
+              (job) => String(getJobId(job)) !== String(jobId)
+            )
+          );
+        } else {
+          await saveJobService.saveJob(jobId);
+          setSavedJobs((previousJobs) => [
             ...previousJobs,
             jobToToggle,
-          ];
+          ]);
         }
-      );
+      } catch (err) {
+        console.error("Failed to toggle save job:", err);
+      }
     };
 
   // ==========================================================
@@ -464,17 +462,26 @@ export default function ForYouPage() {
   // ==========================================================
 
   const handleRemoveSavedJob =
-    (jobId) => {
-      setSavedJobs(
-        (previousJobs) =>
-          previousJobs.filter(
-            (job) =>
-              String(
-                getJobId(job)
-              ) !==
-              String(jobId)
-          )
-      );
+    async (jobId) => {
+      if (jobId === undefined || jobId === null || jobId === "") {
+        return;
+      }
+
+      try {
+        await saveJobService.unsaveJob(jobId);
+        setSavedJobs(
+          (previousJobs) =>
+            previousJobs.filter(
+              (job) =>
+                String(
+                  getJobId(job)
+                ) !==
+                String(jobId)
+            )
+        );
+      } catch (err) {
+        console.error("Failed to remove saved job:", err);
+      }
     };
 
   // ==========================================================

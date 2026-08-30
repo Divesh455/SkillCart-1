@@ -71,6 +71,25 @@ export default function JobsPage() {
     }
   });
 
+  useEffect(() => {
+    const fetchSavedJobs = async () => {
+      try {
+        const list = await saveJobService.getSavedJobs();
+        if (Array.isArray(list)) {
+          setSavedJobs(list);
+          const ids = new Set(
+            list.map((item) => String(item?.id ?? item?.job_id ?? item?._id ?? item)).filter(Boolean)
+          );
+          setSavedJobIds(ids);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch saved jobs on mount:", err);
+      }
+    };
+
+    fetchSavedJobs();
+  }, []);
+
   const handleSaveJob = async (job) => {
     const jobId =
       job?.id ??
@@ -82,20 +101,49 @@ export default function JobsPage() {
       return;
     }
 
+    const isAlreadySaved =
+      savedJobIds.has(String(jobId)) ||
+      savedJobs.some(
+        (savedJob) =>
+          String(savedJob?.id ?? savedJob?.job_id ?? savedJob?._id) === String(jobId)
+      );
+
     try {
       setSavingJobId(jobId);
       setSaveMessage("");
 
-      await saveJobService.saveJob(jobId);
+      if (isAlreadySaved) {
+        await saveJobService.unsaveJob(jobId);
 
-      // Backend successfully saved the job
-      setSavedJobIds((previous) => {
-        const next = new Set(previous);
-        next.add(String(jobId));
-        return next;
-      });
+        setSavedJobIds((previous) => {
+          const next = new Set(previous);
+          next.delete(String(jobId));
+          return next;
+        });
 
-      setSaveMessage("Job saved successfully.");
+        setSavedJobs((previous) =>
+          previous.filter(
+            (savedJob) =>
+              String(savedJob?.id ?? savedJob?.job_id ?? savedJob?._id) !== String(jobId)
+          )
+        );
+
+        setSaveMessage("Job removed from saved jobs.");
+      } else {
+        await saveJobService.saveJob(jobId);
+
+        setSavedJobIds((previous) => {
+          const next = new Set(previous);
+          next.add(String(jobId));
+          return next;
+        });
+
+        if (job) {
+          setSavedJobs((previous) => [...previous, job]);
+        }
+
+        setSaveMessage("Job saved successfully.");
+      }
 
       setTimeout(() => {
         setSaveMessage("");
@@ -103,13 +151,13 @@ export default function JobsPage() {
 
     } catch (error) {
       console.error(
-        "Save job failed:",
+        "Save/Unsave job failed:",
         error
       );
 
       setSaveMessage(
         error?.message ||
-        "Unable to save job. Please try again."
+        "Unable to update saved job. Please try again."
       );
 
       setTimeout(() => {
@@ -120,6 +168,8 @@ export default function JobsPage() {
       setSavingJobId(null);
     }
   };
+
+  const handleToggleSaveJob = handleSaveJob;
 
   // =========================================================
   // PAGINATION
@@ -218,59 +268,7 @@ export default function JobsPage() {
     setOffset(newOffset);
   };
 
-  // =========================================================
-  // SAVE / UNSAVE JOB
-  // =========================================================
 
-  const handleToggleSaveJob = (
-    jobToToggle
-  ) => {
-    if (!jobToToggle) {
-      return;
-    }
-
-    const jobId =
-      jobToToggle.id ??
-      jobToToggle._id ??
-      jobToToggle.job_id;
-
-    if (!jobId) {
-      console.warn(
-        "Cannot save job without an ID:",
-        jobToToggle
-      );
-
-      return;
-    }
-
-    setSavedJobs((previousJobs) => {
-      const exists =
-        previousJobs.some(
-          (job) =>
-            String(
-              job.id ??
-              job._id ??
-              job.job_id
-            ) === String(jobId)
-        );
-
-      if (exists) {
-        return previousJobs.filter(
-          (job) =>
-            String(
-              job.id ??
-              job._id ??
-              job.job_id
-            ) !== String(jobId)
-        );
-      }
-
-      return [
-        ...previousJobs,
-        jobToToggle,
-      ];
-    });
-  };
 
   // =========================================================
   // SEARCH FILTER

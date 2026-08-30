@@ -49,6 +49,7 @@ export function AppProvider({ children }) {
     useState(() => {
       return (
         localStorage.getItem("res_id") ||
+        localStorage.getItem("resume_id") ||
         null
       );
     });
@@ -79,12 +80,21 @@ export function AppProvider({ children }) {
         String(id)
       );
 
+      localStorage.setItem(
+        "resume_id",
+        String(id)
+      );
+
     } else {
 
       setResumeIdState(null);
 
       localStorage.removeItem(
         "res_id"
+      );
+
+      localStorage.removeItem(
+        "resume_id"
       );
     }
   };
@@ -216,6 +226,7 @@ export function AppProvider({ children }) {
   // ============================================================
   const fetchResumeData = async () => {
     const storedResumeId =
+      localStorage.getItem("res_id") ||
       localStorage.getItem("resume_id");
 
     if (!storedResumeId) {

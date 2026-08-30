@@ -1,4 +1,5 @@
 import api from "./api";
+import saveJobService from "./savejobs";
 
 const JOBS_API_URL =
   "https://skillcart-company-api.onrender.com";
@@ -285,16 +286,15 @@ export const jobService = {
     return validJobs;
   },
 
-  saveJob: (jobId) =>
-    api.post(
-      `/jobs/${jobId}/save`,
-      {}
-    ),
+  saveJob: (jobId) => saveJobService.saveJob(jobId),
 
-  unsaveJob: (jobId) =>
-    api.delete(
-      `/jobs/${jobId}/save`
-    ),
+  unsaveJob: (jobId) => saveJobService.unsaveJob(jobId),
+
+  getSavedJobs: () => saveJobService.getSavedJobs(),
+
+  checkJobSaved: (jobId) => saveJobService.checkJobSaved(jobId),
+
+  isJobSaved: (jobId) => saveJobService.checkJobSaved(jobId),
 };
 
 export default jobService;
