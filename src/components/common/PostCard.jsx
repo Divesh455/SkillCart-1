@@ -21,25 +21,42 @@ import UserHeader from "./UserHeader";
 // GET CURRENT USER ID FROM JWT
 // ============================================================
 
-function getCurrentUserId() {
+function getCurrentUserInfo() {
   try {
-    const token =
-      localStorage.getItem("token");
+    const token = localStorage.getItem("token");
+    let payload = null;
+    if (token && typeof token === "string" && token.includes(".")) {
+      try {
+        payload = JSON.parse(atob(token.split(".")[1]));
+      } catch (e) {}
+    }
 
-    if (!token) return null;
+    let savedUser = null;
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        savedUser = JSON.parse(userStr);
+      } catch (e) {}
+    }
 
-    const payload = JSON.parse(
-      atob(token.split(".")[1])
-    );
+    const userId =
+      payload?.userId ||
+      payload?.id ||
+      savedUser?.id ||
+      savedUser?.userId ||
+      (payload?.sub && !isNaN(payload?.sub) ? payload?.sub : null);
 
-    return payload?.userId || null;
+    const username =
+      savedUser?.username ||
+      savedUser?.name ||
+      payload?.username ||
+      payload?.name ||
+      payload?.sub ||
+      "You";
+
+    return { userId, username };
   } catch (error) {
-    console.error(
-      "GET CURRENT USER ID ERROR:",
-      error
-    );
-
-    return null;
+    return { userId: null, username: "You" };
   }
 }
 
@@ -52,84 +69,87 @@ export default function PostCard({
   // CURRENT USER
   // ============================================================
 
-  const currentUserId =
-    getCurrentUserId();
+  const { userId: currentUserId, username: currentUsername } =
+    getCurrentUserInfo();
 
-  // ============================================================
-  // POST USER
-  // ============================================================
+  const [allUsers, setAllUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const users = await socialService.getAllUsers();
+        if (Array.isArray(users)) {
+          setAllUsers(users);
+        }
+      } catch (e) {
+        console.warn("Failed to fetch users list:", e);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const [postUser, setPostUser] =
     useState(null);
 
-  // ============================================================
-  // LOAD POST USER
-  // ============================================================
+  const postAuthorId = post?.userId || post?.user_id || post?.authorId;
+
+  const isMyPost = Boolean(
+    post?.isMyPost ||
+    (currentUserId &&
+      postAuthorId &&
+      String(currentUserId) === String(postAuthorId))
+  );
 
   useEffect(() => {
-
-    if (!post?.userId) {
+    if (isMyPost) {
+      setPostUser({
+        username: "You",
+        id: currentUserId,
+      });
       return;
     }
 
-    const loadPostUser =
-      async () => {
+    if (!postAuthorId) {
+      return;
+    }
 
-        try {
+    if (post?.user?.username || post?.authorName || post?.username) {
+      setPostUser({
+        username: post?.user?.username || post?.authorName || post?.username,
+        id: postAuthorId,
+      });
+      return;
+    }
 
-          const users =
-            await socialService.getAllUsers();
+    if (Array.isArray(allUsers) && allUsers.length > 0) {
+      const foundUser = allUsers.find(
+        (user) => String(user.id) === String(postAuthorId)
+      );
+      if (foundUser) {
+        setPostUser(foundUser);
+        return;
+      }
+    }
 
-          console.log(
-            "ALL USERS FOR POST:",
-            users
-          );
+    const loadPostUser = async () => {
+      try {
+        const users = await socialService.getAllUsers();
+        const foundUser = Array.isArray(users)
+          ? users.find(
+              (user) => String(user.id) === String(postAuthorId)
+            )
+          : null;
 
-          const foundUser =
-            Array.isArray(users)
-              ? users.find(
-                  (user) =>
-                    String(user.id) ===
-                    String(post.userId)
-                )
-              : null;
-
-          console.log(
-            "POST USER:",
-            post.userId,
-            foundUser
-          );
-
-          setPostUser(
-            foundUser || null
-          );
-
-        } catch (error) {
-
-          console.error(
-            "FAILED TO LOAD POST USER:",
-            error
-          );
-
-          setPostUser(null);
-        }
-      };
+        setPostUser(foundUser || null);
+      } catch (error) {
+        console.error("FAILED TO LOAD POST USER:", error);
+        setPostUser(null);
+      }
+    };
 
     loadPostUser();
-
-  }, [post?.userId]);
-
-  // ============================================================
-  // CHECK MY POST
-  // ============================================================
-
-  const isMyPost =
-    Boolean(
-      currentUserId &&
-      post?.userId &&
-      String(currentUserId) ===
-        String(post.userId)
-    );
+  }, [postAuthorId, post?.user, post?.authorName, post?.username, isMyPost, currentUserId, allUsers]);
 
   // ============================================================
   // FOLLOW
@@ -510,25 +530,27 @@ export default function PostCard({
             text
           );
 
-        if (newComment) {
+        const formattedComment = {
+          ...(newComment || {}),
+          id: newComment?.id || Date.now(),
+          content: text,
+          userId: currentUserId,
+          user_id: currentUserId,
+          isMyComment: true,
+          createdAt: newComment?.createdAt || new Date().toISOString(),
+        };
 
-          setComments(
-            (current) => [
-              ...current,
-              newComment,
-            ]
-          );
+        setComments(
+          (current) => [
+            ...current,
+            formattedComment,
+          ]
+        );
 
-          setCommentCount(
-            (count) =>
-              count + 1
-          );
-
-        } else {
-
-          await loadComments();
-
-        }
+        setCommentCount(
+          (count) =>
+            count + 1
+        );
 
         setCommentText("");
 
@@ -678,6 +700,7 @@ export default function PostCard({
             isFollowing={isFollowing}
             followLoading={followLoading}
             onFollow={handleFollow}
+            isMyPost={isMyPost}
           />
 
           {/* ==================================================
@@ -1148,97 +1171,135 @@ export default function PostCard({
               ) : (
 
                 comments.map(
-                  (comment) => (
+                  (comment) => {
+                    const commentUserId =
+                      comment?.userId ||
+                      comment?.user_id ||
+                      comment?.authorId ||
+                      comment?.user?.id;
 
-                    <div
-                      key={comment.id}
-                      className="
-                        flex
-                        gap-3
-                      "
-                    >
+                    const isMyComment = Boolean(
+                      comment?.isMyComment ||
+                      comment?.isMine ||
+                      (currentUserId &&
+                        commentUserId &&
+                        String(currentUserId) === String(commentUserId))
+                    );
 
+                    let authorName = "SkillCart User";
+                    let authorInitial = "U";
+
+                    if (isMyComment) {
+                      authorName = "You";
+                      authorInitial = "Y";
+                    } else {
+                      const directName =
+                        comment?.username ||
+                        comment?.authorName ||
+                        comment?.author ||
+                        comment?.user?.username ||
+                        comment?.user?.name ||
+                        comment?.user?.fullName ||
+                        comment?.name;
+
+                      if (directName) {
+                        authorName = directName;
+                        authorInitial = directName.trim().charAt(0).toUpperCase();
+                      } else if (commentUserId && Array.isArray(allUsers)) {
+                        const foundUser = allUsers.find(
+                          (u) => String(u.id) === String(commentUserId)
+                        );
+                        if (foundUser?.username || foundUser?.name) {
+                          authorName = foundUser.username || foundUser.name;
+                          authorInitial = authorName.trim().charAt(0).toUpperCase();
+                        }
+                      }
+                    }
+
+                    return (
                       <div
+                        key={comment.id || comment._id || Math.random()}
                         className="
-                          w-8
-                          h-8
-                          rounded-xl
-                          bg-gradient-to-br
-                          from-[#123c2c]
-                          to-[#19714e]
-                          text-[#b9ef84]
                           flex
-                          items-center
-                          justify-center
-                          text-[10px]
-                          font-bold
-                          shrink-0
+                          gap-3
                         "
                       >
-                        U
-                      </div>
-
-                      <div
-                        className="
-                          flex-1
-                          min-w-0
-                        "
-                      >
+                        <div
+                          className="
+                            w-8
+                            h-8
+                            rounded-xl
+                            bg-gradient-to-br
+                            from-[#123c2c]
+                            to-[#19714e]
+                            text-[#b9ef84]
+                            flex
+                            items-center
+                            justify-center
+                            text-[10px]
+                            font-bold
+                            shrink-0
+                          "
+                        >
+                          {authorInitial}
+                        </div>
 
                         <div
                           className="
-                            bg-white
-                            border
-                            border-[#dfe7e2]
-                            rounded-2xl
-                            px-3.5
-                            py-2.5
+                            flex-1
+                            min-w-0
                           "
                         >
-
-                          <p
+                          <div
                             className="
-                              text-xs
-                              font-bold
-                              text-[#12221d]
+                              bg-white
+                              border
+                              border-[#dfe7e2]
+                              rounded-2xl
+                              px-3.5
+                              py-2.5
                             "
                           >
-                            SkillCart User
-                          </p>
+                            <p
+                              className="
+                                text-xs
+                                font-bold
+                                text-[#12221d]
+                              "
+                            >
+                              {authorName}
+                            </p>
+
+                            <p
+                              className="
+                                text-xs
+                                text-[#12221d]
+                                leading-5
+                                mt-1
+                                whitespace-pre-wrap
+                                break-words
+                              "
+                            >
+                              {comment.content}
+                            </p>
+                          </div>
 
                           <p
                             className="
-                              text-xs
-                              text-[#12221d]
-                              leading-5
+                              text-[10px]
+                              text-[#68756f]
                               mt-1
-                              whitespace-pre-wrap
-                              break-words
+                              ml-1
                             "
                           >
-                            {comment.content}
+                            {formatCommentDate(
+                              comment.createdAt || comment.created_at
+                            )}
                           </p>
-
                         </div>
-
-                        <p
-                          className="
-                            text-[10px]
-                            text-[#68756f]
-                            mt-1
-                            ml-1
-                          "
-                        >
-                          {formatCommentDate(
-                            comment.createdAt
-                          )}
-                        </p>
-
                       </div>
-
-                    </div>
-
-                  )
+                    );
+                  }
                 )
 
               )}

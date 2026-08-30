@@ -267,9 +267,10 @@ const avatarText = username
         onPostCreated &&
         createdPost
       ) {
-        onPostCreated(
-          createdPost
-        );
+        onPostCreated({
+          ...createdPost,
+          isMyPost: true,
+        });
       }
 
       // ========================================================

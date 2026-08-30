@@ -7,21 +7,38 @@ export default function UserHeader({
   isFollowing = false,
   followLoading = false,
   onFollow,
+  isMyPost = false,
 }) {
+  const displayUsername = useMemo(() => {
+    if (isMyPost) {
+      return "You";
+    }
+
+    return (
+      user?.username ||
+      user?.name ||
+      user?.authorName ||
+      user?.fullName ||
+      (user?.email ? user.email.split("@")[0] : null) ||
+      "SkillCart User"
+    );
+  }, [user, isMyPost]);
+
   // Get first letter from username
   const initial = useMemo(() => {
-    if (!user?.username) {
+    if (isMyPost) {
+      return "Y";
+    }
+
+    if (!displayUsername || displayUsername === "SkillCart User") {
       return "U";
     }
 
-    return user.username
+    return displayUsername
       .trim()
       .charAt(0)
       .toUpperCase();
-  }, [user]);
-
-  const username =
-    user?.username || "SkillCart User";
+  }, [displayUsername, isMyPost]);
 
   const formattedDate = createdAt
     ? new Date(createdAt).toLocaleString()
@@ -67,7 +84,7 @@ export default function UserHeader({
             truncate
           "
         >
-          {username}
+          {displayUsername}
         </p>
 
         {formattedDate && (
@@ -107,8 +124,7 @@ export default function UserHeader({
                   border
                   border-[#19714e]
                   text-[#19714e]
-                  bg-white
-                  hover:bg-[#f0f8f4]
+                  bg-[#f0f8f4]
                 `
                 : `
                   bg-[#123c2c]
@@ -131,6 +147,7 @@ export default function UserHeader({
               : "Follow"}
         </button>
       )}
+
     </div>
   );
 }
