@@ -32,7 +32,7 @@ export default defineConfig({
         configure: handleProxyError,
       },
       '/api-proxy/render-ai': {
-        target: 'https://skillcart-ai.onrender.com',
+        target: 'https://skillcart-ai.fastapicloud.dev',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api-proxy\/render-ai/, ''),

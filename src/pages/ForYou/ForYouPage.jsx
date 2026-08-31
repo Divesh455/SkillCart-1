@@ -210,7 +210,7 @@ export default function ForYouPage() {
           // and calls:
           //
           // POST
-          // https://skillcart-ai.onrender.com
+          // https://skillcart-ai.fastapicloud.dev
           // api/v1/career/match
           // --------------------------------------------------
 

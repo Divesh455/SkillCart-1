@@ -4,7 +4,7 @@
  */
 
 const RESUME_BASE_URL = "https://skillcart-resume.onrender.com";
-const GENERATE_RESUME_BASE_URL = "https://skillcart-ai.onrender.com";
+const GENERATE_RESUME_BASE_URL = "https://skillcart-ai.fastapicloud.dev";
 const PROXY_RESUME_URL = "/api-proxy/resume-server";
 
 /**
@@ -118,7 +118,7 @@ export const resumeService = {
   },
   /**
    * Post resume form data to generate resume details
-   * Endpoint: POST https://skillcart-ai.onrender.com/api/v1/resume/generate
+   * Endpoint: POST https://skillcart-ai.fastapicloud.dev/api/v1/resume/generate
    * @param {Object} payload - Candidate resume data
    * @returns {Promise<Object>} API response details containing data.download_url
    */
