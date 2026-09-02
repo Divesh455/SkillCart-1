@@ -38,6 +38,51 @@ const socialService = {
     ),
 
   // =====================================
+  // GET MY / FOLLOWING POSTS
+  // =====================================
+
+  getMyFollowingPosts: (page = 0, size = 50) =>
+    socialApi.get(
+      `/api/social/posts/my?page=${page}&size=${size}`
+    ),
+
+  // =====================================
+  // GET ALL PUBLIC POSTS
+  // =====================================
+
+  getAllPosts: async (page = 0, size = 50) => {
+    try {
+      const response = await socialApi.get(
+        `/api/social/posts?page=${page}&size=${size}`
+      );
+      if (
+        response &&
+        (Array.isArray(response) || response.content || response.items)
+      ) {
+        return response;
+      }
+    } catch (e) {
+      console.warn("getAllPosts endpoint failed, attempting dynamic aggregate:", e);
+    }
+
+    try {
+      const users = await socialService.getAllUsers();
+      const userList = Array.isArray(users) ? users : users?.content || [];
+      const postsPromises = userList
+        .slice(0, 10)
+        .map((u) => socialService.getUserPosts(u.id, 0, 10).catch(() => null));
+      const results = await Promise.all(postsPromises);
+      const allPosts = results.flatMap((r) =>
+        Array.isArray(r) ? r : r?.content || []
+      );
+      return { content: allPosts };
+    } catch (err) {
+      return socialService.getFeed(page, size);
+  
+    }
+  },
+
+  // =====================================
   // GET SINGLE POST
   // =====================================
 
