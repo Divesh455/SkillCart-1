@@ -43,7 +43,7 @@ const socialService = {
 
   getMyFollowingPosts: (page = 0, size = 50) =>
     socialApi.get(
-      `/api/social/posts/my?page=${page}&size=${size}`
+      `/api/social/feed/my?page=${page}&size=${size}`
     ),
 
   // =====================================

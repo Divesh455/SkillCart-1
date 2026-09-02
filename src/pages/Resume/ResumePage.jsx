@@ -1380,27 +1380,40 @@ export default function ResumePage() {
       {/* MAIN */}
       {/* --------------------------------------------------------------------- */}
 
-      <main className="max-w-6xl mx-auto px-6 pt-10">
+      <main className="max-w-7xl mx-auto px-5 sm:px-6 pt-8 sm:pt-10">
 
         {/* ------------------------------------------------------------------- */}
         {/* TOP HEADER */}
         {/* ------------------------------------------------------------------- */}
 
         {mode !== "analyze_success" && (
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#dff8eb] text-[#19714e] text-xs font-semibold mb-4 border border-[#19714e]/20 shadow-2xs">
-              <Sparkles size={14} />
-              Resume Center
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative text-center max-w-3xl mx-auto mb-10 sm:mb-14"
+          >
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-[#dff8eb]/50 blur-3xl rounded-full pointer-events-none" />
+
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-[#dfe7e2] text-[#19714e] text-[11px] font-bold uppercase tracking-wider mb-5 shadow-sm">
+                <Sparkles size={14} />
+                Resume Center
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight leading-[1.05]">
+                Build a Resume
+                <span className="block text-[#19714e] mt-1">
+                  That Gets Noticed
+                </span>
+              </h1>
+
+              <p className="text-sm sm:text-base text-[#68756f] mt-5 leading-7 max-w-2xl mx-auto">
+                Upload your existing resume or create a professional one
+                from scratch. Build your career profile with SkillCart.
+              </p>
             </div>
-
-            <h1 className="text-3xl sm:text-4xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
-              Build Your Career Foundation
-            </h1>
-
-            <p className="text-sm sm:text-base text-[#68756f] mt-3 leading-relaxed">
-              Upload, create, or analyze your resume to improve your career profile.
-            </p>
-          </div>
+          </motion.div>
         )}
 
         {/* ------------------------------------------------------------------- */}
@@ -1409,7 +1422,7 @@ export default function ResumePage() {
 
         {activeDownloadUrl &&
           mode === "select" && (
-            <div className="max-w-4xl mx-auto mb-8 p-4.5 rounded-2xl bg-[#dff8eb] border border-[#19714e]/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+            <div className="w-full max-w-5xl mx-auto mb-8 p-4.5 rounded-2xl bg-[#dff8eb] border border-[#19714e]/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="w-10 h-10 rounded-xl bg-[#19714e] text-white flex items-center justify-center shrink-0 shadow-xs">
                   <FileText size={20} />
@@ -1452,194 +1465,229 @@ export default function ResumePage() {
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto"
+            className="relative left-1/2 -translate-x-1/2 w-screen max-w-none px-5 sm:px-6"
           >
-
-            {/* Upload Resume */}
+            <div className="max-w-5xl mx-auto">
             <motion.div
               variants={fadeIn}
-              whileHover={{ y: -4 }}
-              className="bg-white border border-[#dfe7e2] hover:border-[#19714e] rounded-3xl p-8 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/5 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
-              onClick={() =>
-                setMode("upload")
-              }
+              className="flex items-center justify-between mb-5"
             >
               <div>
-                <div className="w-14 h-14 rounded-2xl bg-[#dff8eb] text-[#19714e] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <UploadCloud size={28} />
-                </div>
-
-                <h3 className="text-xl font-bold text-[#12221d] font-['Space_Grotesk'] mb-2">
-                  Upload Resume
-                </h3>
-
-                <p className="text-xs text-[#68756f] leading-relaxed mb-6">
-                  Have an existing resume? Upload your PDF or DOC file to send your details directly to the backend.
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#19714e]">
+                  Choose how to begin
                 </p>
-
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-2 text-xs text-[#12221d]/80 font-medium">
-                    <CheckCircle2
-                      size={15}
-                      className="text-[#19714e]"
-                    />
-                    <span>
-                      Supports PDF, DOC, DOCX
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-xs text-[#12221d]/80 font-medium">
-                    <CheckCircle2
-                      size={15}
-                      className="text-[#19714e]"
-                    />
-                    <span>
-                      Secure backend storage
-                    </span>
-                  </div>
-                </div>
+                <p className="text-xs text-[#68756f] mt-1">
+                  Start with an existing resume or build one from scratch.
+                </p>
               </div>
 
-              <button
-                type="button"
-                className="w-full py-3 rounded-xl bg-[#123c2c] group-hover:bg-[#19714e] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
-              >
-                <span>
-                  Upload Resume
-                </span>
-
-                <ArrowRight size={16} />
-              </button>
+              <div className="hidden sm:flex items-center gap-2 text-[11px] text-[#68756f]">
+                <span className="w-2 h-2 rounded-full bg-[#19714e]" />
+                2 options
+              </div>
             </motion.div>
 
-            {/* Create Resume */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+              {/* ============================================================= */}
+              {/* UPLOAD RESUME */}
+              {/* ============================================================= */}
+              <motion.div
+                variants={fadeIn}
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.25 }}
+                onClick={() => setMode("upload")}
+                className="group relative overflow-hidden bg-white border border-[#dfe7e2] hover:border-[#19714e]/60 rounded-[28px] p-7 sm:p-9 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/10 transition-all duration-300 cursor-pointer min-h-[390px] flex flex-col"
+              >
+                <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-[#dff8eb]/60 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                <div className="relative flex flex-col h-full">
+                  <div className="flex items-start justify-between">
+                    <div className="w-16 h-16 rounded-2xl bg-[#dff8eb] text-[#19714e] flex items-center justify-center group-hover:scale-105 group-hover:bg-[#19714e] group-hover:text-white transition-all duration-300">
+                      <UploadCloud size={30} strokeWidth={1.8} />
+                    </div>
+
+                    <span className="text-xs font-bold text-[#dfe7e2] group-hover:text-[#b8d7ca] transition-colors">
+                      01
+                    </span>
+                  </div>
+
+                  <div className="mt-7">
+                    <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
+                      Upload Resume
+                    </h3>
+
+                    <p className="text-sm text-[#68756f] leading-6 mt-3 max-w-md">
+                      Already have a resume? Upload your existing PDF or DOC
+                      file and continue your career journey.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} className="text-[#19714e]" />
+                      </div>
+                      <span className="text-xs font-medium text-[#52615a]">
+                        PDF, DOC & DOCX supported
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} className="text-[#19714e]" />
+                      </div>
+                      <span className="text-xs font-medium text-[#52615a]">
+                        Secure backend storage
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} className="text-[#19714e]" />
+                      </div>
+                      <span className="text-xs font-medium text-[#52615a]">
+                        Fast resume processing
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto pt-8">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMode("upload");
+                      }}
+                      className="w-full py-3.5 px-5 rounded-xl bg-[#123c2c] hover:bg-[#19714e] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-md shadow-[#123c2c]/10"
+                    >
+                      <UploadCloud size={17} />
+                      <span>Upload Resume</span>
+                      <ArrowRight size={17} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* ============================================================= */}
+              {/* CREATE RESUME */}
+              {/* ============================================================= */}
+              <motion.div
+                variants={fadeIn}
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.25 }}
+                onClick={() => setMode("create")}
+                className="group relative overflow-hidden bg-white border border-[#dfe7e2] hover:border-[#19714e]/60 rounded-[28px] p-7 sm:p-9 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/10 transition-all duration-300 cursor-pointer min-h-[390px] flex flex-col"
+              >
+                <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-[#b9ef84]/25 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                <div className="relative flex flex-col h-full">
+                  <div className="flex items-start justify-between">
+                    <div className="w-16 h-16 rounded-2xl bg-[#eef9df] text-[#123c2c] flex items-center justify-center group-hover:scale-105 group-hover:bg-[#123c2c] group-hover:text-white transition-all duration-300">
+                      <FileText size={30} strokeWidth={1.8} />
+                    </div>
+
+                    <span className="text-xs font-bold text-[#dfe7e2] group-hover:text-[#b8d7ca] transition-colors">
+                      02
+                    </span>
+                  </div>
+
+                  <div className="mt-7">
+                    <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
+                      Create Resume
+                    </h3>
+
+                    <p className="text-sm text-[#68756f] leading-6 mt-3 max-w-md">
+                      Don't have a resume yet? Build a professional resume
+                      step-by-step with our guided builder.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} className="text-[#19714e]" />
+                      </div>
+                      <span className="text-xs font-medium text-[#52615a]">
+                        Guided resume builder
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} className="text-[#19714e]" />
+                      </div>
+                      <span className="text-xs font-medium text-[#52615a]">
+                        Professional resume structure
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} className="text-[#19714e]" />
+                      </div>
+                      <span className="text-xs font-medium text-[#52615a]">
+                        Generate a ready-to-use PDF
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto pt-8">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMode("create");
+                      }}
+                      className="w-full py-3.5 px-5 rounded-xl bg-white border border-[#123c2c] text-[#123c2c] hover:bg-[#123c2c] hover:text-white text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300"
+                    >
+                      <FileText size={17} />
+                      <span>Start Building</span>
+                      <ArrowRight size={17} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Resume journey */}
             <motion.div
               variants={fadeIn}
-              whileHover={{ y: -4 }}
-              className="bg-white border border-[#dfe7e2] hover:border-[#19714e] rounded-3xl p-8 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/5 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
-              onClick={() =>
-                setMode("create")
-              }
+              className="mt-8 flex items-center justify-center"
             >
-              <div>
-                <div className="w-14 h-14 rounded-2xl bg-[#b9ef84]/30 text-[#123c2c] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <FileText size={28} />
+              <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/70 border border-[#dfe7e2]">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
+                    1
+                  </span>
+                  <span className="text-[11px] font-semibold text-[#52615a]">
+                    Choose
+                  </span>
                 </div>
 
-                <h3 className="text-xl font-bold text-[#12221d] font-['Space_Grotesk'] mb-2">
-                  Create Resume
-                </h3>
+                <ArrowRight size={13} className="text-[#b1bdb7]" />
 
-                <p className="text-xs text-[#68756f] leading-relaxed mb-6">
-                  Don't have a resume? Build your resume step-by-step using our guided interactive form.
-                </p>
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
+                    2
+                  </span>
+                  <span className="text-[11px] font-semibold text-[#52615a]">
+                    Build
+                  </span>
+                </div>
 
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-2 text-xs text-[#12221d]/80 font-medium">
-                    <CheckCircle2
-                      size={15}
-                      className="text-[#19714e]"
-                    />
-                    <span>
-                      Guided step-by-step form
-                    </span>
-                  </div>
+                <ArrowRight size={13} className="text-[#b1bdb7]" />
 
-                  <div className="flex items-center gap-2 text-xs text-[#12221d]/80 font-medium">
-                    <CheckCircle2
-                      size={15}
-                      className="text-[#19714e]"
-                    />
-                    <span>
-                      Instant backend creation
-                    </span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
+                    3
+                  </span>
+                  <span className="text-[11px] font-semibold text-[#52615a]">
+                    Apply
+                  </span>
                 </div>
               </div>
-
-              <button
-                type="button"
-                className="w-full py-3 rounded-xl bg-white border border-[#123c2c] text-[#123c2c] group-hover:bg-[#123c2c] group-hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
-              >
-                <span>
-                  Build From Scratch
-                </span>
-
-                <ArrowRight size={16} />
-              </button>
             </motion.div>
-
-            {/* Analyze Resume */}
-            {/* <motion.div
-              variants={fadeIn}
-              whileHover={{ y: -4 }}
-              className="bg-white border border-[#dfe7e2] hover:border-[#19714e] rounded-3xl p-8 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/5 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
-              onClick={() => {
-                setAnalyzeFile(null);
-                setAnalysisResult(null);
-                setErrorMessage("");
-                setMode("analyze");
-              }}
-             >
-              <div>
-                <div className="w-14 h-14 rounded-2xl bg-[#dff8eb] text-[#19714e] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Sparkles size={28} />
-                </div>
-
-                <h3 className="text-xl font-bold text-[#12221d] font-['Space_Grotesk'] mb-2">
-                  Analyze Resume
-                </h3>
-
-                <p className="text-xs text-[#68756f] leading-relaxed mb-6">
-                  Upload your resume and get AI-powered feedback, ATS scoring, strengths, weaknesses, and improvement suggestions.
-                </p>
-
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-2 text-xs text-[#12221d]/80 font-medium">
-                    <CheckCircle2
-                      size={15}
-                      className="text-[#19714e]"
-                    />
-                    <span>
-                      ATS Resume Score
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-xs text-[#12221d]/80 font-medium">
-                    <CheckCircle2
-                      size={15}
-                      className="text-[#19714e]"
-                    />
-                    <span>
-                      Grammar & Structure
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-xs text-[#12221d]/80 font-medium">
-                    <CheckCircle2
-                      size={15}
-                      className="text-[#19714e]"
-                    />
-                    <span>
-                      AI Recommendations
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                className="w-full py-3 rounded-xl bg-white border border-[#123c2c] text-[#123c2c] group-hover:bg-[#123c2c] group-hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
-              >
-                <Sparkles size={15} />
-
-                <span>
-                  Analyze Resume
-                </span>
-
-                <ArrowRight size={16} />
-              </button>
-            </motion.div> */}
+            </div>
           </motion.div>
         )}
 

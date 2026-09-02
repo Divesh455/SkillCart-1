@@ -186,7 +186,7 @@ export default function Feed({ newPost }) {
             }`}
           >
             <Globe size={15} />
-            <span>All Posts</span>
+            <span>Gigs</span>
           </button>
 
           <button
@@ -199,7 +199,7 @@ export default function Feed({ newPost }) {
             }`}
           >
             <Users size={15} />
-            <span>Following</span>
+            <span>Circle</span>
           </button>
         </div>
 
