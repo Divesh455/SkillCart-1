@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 
 import jobService from "../../services/jobService";
+import EvaluateFitButton from "../../components/common/EvaluateFitButton";
+import JobEvaluationModal from "../../components/common/JobEvaluationModal";
 
 /**
  * Convert any API value into a safe React string.
@@ -218,6 +220,11 @@ export default function JobDetailModal({
 
   const [imgError, setImgError] =
     useState(false);
+
+  const [evaluationResult, setEvaluationResult] = useState(null);
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const [evaluationError, setEvaluationError] = useState(null);
+  const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
 
   /**
    * Get ID from the selected job.
@@ -1223,17 +1230,54 @@ export default function JobDetailModal({
 
           </div>
 
-          <button
-            type="button"
-            onClick={handleApply}
-            className="px-6 sm:px-8 py-2.5 sm:py-3 bg-[#123c2c] hover:bg-[#19714e] text-white font-bold rounded-xl sm:rounded-2xl text-xs sm:text-sm shadow-md transition-all"
-          >
-            Apply Now
-          </button>
+          <div className="flex items-center gap-2.5">
+            <EvaluateFitButton
+              job={fetchedJob || job}
+              onStartEvaluate={() => {
+                setIsEvaluationModalOpen(true);
+                setIsEvaluating(true);
+                setEvaluationError(null);
+                setEvaluationResult(null);
+              }}
+              onResult={(res) => {
+                setEvaluationResult(res);
+                setIsEvaluating(false);
+              }}
+              onError={(err) => {
+                setEvaluationError(err?.message || "Evaluation failed.");
+                setIsEvaluating(false);
+              }}
+              className="h-10 sm:h-12 px-4 sm:px-5 rounded-xl sm:rounded-2xl bg-[#dff8eb] hover:bg-[#c9f2df] text-[#123c2c] text-xs sm:text-sm font-semibold border border-[#19714e]/20 flex items-center gap-1.5 transition-all cursor-pointer"
+            />
+
+            <button
+              type="button"
+              onClick={handleApply}
+              className="px-6 sm:px-8 py-2.5 sm:py-3 bg-[#123c2c] hover:bg-[#19714e] text-white font-bold rounded-xl sm:rounded-2xl text-xs sm:text-sm shadow-md transition-all cursor-pointer"
+            >
+              Apply Now
+            </button>
+          </div>
 
         </footer>
 
       </motion.div>
+
+      {/* EVALUATION MODAL */}
+      {isEvaluationModalOpen && (
+        <JobEvaluationModal
+          isLoading={isEvaluating}
+          result={evaluationResult}
+          error={evaluationError}
+          job={fetchedJob || job}
+          onClose={() => {
+            setIsEvaluationModalOpen(false);
+            setIsEvaluating(false);
+            setEvaluationResult(null);
+            setEvaluationError(null);
+          }}
+        />
+      )}
     </motion.div>
   );
 }

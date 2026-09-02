@@ -564,25 +564,25 @@ function ResumeAnalysisResult({ result, onBack }) {
 
         {(result.content_analysis?.improved_versions || [])
           .length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#19714e] mb-3">
-              Improved Versions
-            </h4>
+            <div className="mt-6">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#19714e] mb-3">
+                Improved Versions
+              </h4>
 
-            <div className="space-y-3">
-              {result.content_analysis.improved_versions.map(
-                (item, index) => (
-                  <div
-                    key={index}
-                    className="p-4 rounded-xl bg-[#dff8eb]/50 border border-[#19714e]/10 text-xs text-[#52615a] leading-6"
-                  >
-                    {item}
-                  </div>
-                )
-              )}
+              <div className="space-y-3">
+                {result.content_analysis.improved_versions.map(
+                  (item, index) => (
+                    <div
+                      key={index}
+                      className="p-4 rounded-xl bg-[#dff8eb]/50 border border-[#19714e]/10 text-xs text-[#52615a] leading-6"
+                    >
+                      {item}
+                    </div>
+                  )
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {!result.content_analysis?.weak_statements?.length &&
           !result.content_analysis?.missing_information?.length &&
@@ -600,11 +600,10 @@ function ResumeAnalysisResult({ result, onBack }) {
       >
         <div className="flex items-center gap-3 mb-5">
           <div
-            className={`px-4 py-2 rounded-xl text-xs font-bold ${
-              result.ats_analysis?.ats_friendly
+            className={`px-4 py-2 rounded-xl text-xs font-bold ${result.ats_analysis?.ats_friendly
                 ? "bg-[#dff8eb] text-[#19714e]"
                 : "bg-red-50 text-red-600"
-            }`}
+              }`}
           >
             {result.ats_analysis?.ats_friendly
               ? "ATS Friendly"
@@ -951,7 +950,7 @@ export default function ResumePage() {
       if (!result?.success) {
         throw new Error(
           result?.message ||
-            "Resume analysis failed."
+          "Resume analysis failed."
         );
       }
 
@@ -966,7 +965,7 @@ export default function ResumePage() {
 
       setErrorMessage(
         err.message ||
-          "Unable to analyze your resume. Please try again."
+        "Unable to analyze your resume. Please try again."
       );
     } finally {
       setIsAnalyzing(false);
@@ -1236,13 +1235,13 @@ export default function ResumePage() {
             ? s.skills
             : typeof s.skills ===
               "string"
-            ? s.skills
+              ? s.skills
                 .split(",")
                 .map((item) =>
                   item.trim()
                 )
                 .filter(Boolean)
-            : [],
+              : [],
       })),
 
       certifications: (
@@ -1327,7 +1326,7 @@ export default function ResumePage() {
 
       setErrorMessage(
         err.message ||
-          "Unable to generate your resume. Please try again."
+        "Unable to generate your resume. Please try again."
       );
     } finally {
       setIsProcessing(false);
@@ -1468,225 +1467,225 @@ export default function ResumePage() {
             className="relative left-1/2 -translate-x-1/2 w-screen max-w-none px-5 sm:px-6"
           >
             <div className="max-w-5xl mx-auto">
-            <motion.div
-              variants={fadeIn}
-              className="flex items-center justify-between mb-5"
-            >
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#19714e]">
-                  Choose how to begin
-                </p>
-                <p className="text-xs text-[#68756f] mt-1">
-                  Start with an existing resume or build one from scratch.
-                </p>
-              </div>
-
-              <div className="hidden sm:flex items-center gap-2 text-[11px] text-[#68756f]">
-                <span className="w-2 h-2 rounded-full bg-[#19714e]" />
-                2 options
-              </div>
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-              {/* ============================================================= */}
-              {/* UPLOAD RESUME */}
-              {/* ============================================================= */}
               <motion.div
                 variants={fadeIn}
-                whileHover={{ y: -6 }}
-                transition={{ duration: 0.25 }}
-                onClick={() => setMode("upload")}
-                className="group relative overflow-hidden bg-white border border-[#dfe7e2] hover:border-[#19714e]/60 rounded-[28px] p-7 sm:p-9 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/10 transition-all duration-300 cursor-pointer min-h-[390px] flex flex-col"
+                className="flex items-center justify-between mb-5"
               >
-                <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-[#dff8eb]/60 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#19714e]">
+                    Choose how to begin
+                  </p>
+                  <p className="text-xs text-[#68756f] mt-1">
+                    Start with an existing resume or build one from scratch.
+                  </p>
+                </div>
 
-                <div className="relative flex flex-col h-full">
-                  <div className="flex items-start justify-between">
-                    <div className="w-16 h-16 rounded-2xl bg-[#dff8eb] text-[#19714e] flex items-center justify-center group-hover:scale-105 group-hover:bg-[#19714e] group-hover:text-white transition-all duration-300">
-                      <UploadCloud size={30} strokeWidth={1.8} />
-                    </div>
-
-                    <span className="text-xs font-bold text-[#dfe7e2] group-hover:text-[#b8d7ca] transition-colors">
-                      01
-                    </span>
-                  </div>
-
-                  <div className="mt-7">
-                    <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
-                      Upload Resume
-                    </h3>
-
-                    <p className="text-sm text-[#68756f] leading-6 mt-3 max-w-md">
-                      Already have a resume? Upload your existing PDF or DOC
-                      file and continue your career journey.
-                    </p>
-                  </div>
-
-                  <div className="mt-6 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={14} className="text-[#19714e]" />
-                      </div>
-                      <span className="text-xs font-medium text-[#52615a]">
-                        PDF, DOC & DOCX supported
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={14} className="text-[#19714e]" />
-                      </div>
-                      <span className="text-xs font-medium text-[#52615a]">
-                        Secure backend storage
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={14} className="text-[#19714e]" />
-                      </div>
-                      <span className="text-xs font-medium text-[#52615a]">
-                        Fast resume processing
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto pt-8">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMode("upload");
-                      }}
-                      className="w-full py-3.5 px-5 rounded-xl bg-[#123c2c] hover:bg-[#19714e] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-md shadow-[#123c2c]/10"
-                    >
-                      <UploadCloud size={17} />
-                      <span>Upload Resume</span>
-                      <ArrowRight size={17} className="transition-transform duration-300 group-hover:translate-x-1" />
-                    </button>
-                  </div>
+                <div className="hidden sm:flex items-center gap-2 text-[11px] text-[#68756f]">
+                  <span className="w-2 h-2 rounded-full bg-[#19714e]" />
+                  2 options
                 </div>
               </motion.div>
 
-              {/* ============================================================= */}
-              {/* CREATE RESUME */}
-              {/* ============================================================= */}
-              <motion.div
-                variants={fadeIn}
-                whileHover={{ y: -6 }}
-                transition={{ duration: 0.25 }}
-                onClick={() => setMode("create")}
-                className="group relative overflow-hidden bg-white border border-[#dfe7e2] hover:border-[#19714e]/60 rounded-[28px] p-7 sm:p-9 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/10 transition-all duration-300 cursor-pointer min-h-[390px] flex flex-col"
-              >
-                <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-[#b9ef84]/25 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                {/* ============================================================= */}
+                {/* UPLOAD RESUME */}
+                {/* ============================================================= */}
+                <motion.div
+                  variants={fadeIn}
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.25 }}
+                  onClick={() => setMode("upload")}
+                  className="group relative overflow-hidden bg-white border border-[#dfe7e2] hover:border-[#19714e]/60 rounded-[28px] p-7 sm:p-9 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/10 transition-all duration-300 cursor-pointer min-h-97.5 flex flex-col"
+                >
+                  <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-[#dff8eb]/60 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                <div className="relative flex flex-col h-full">
-                  <div className="flex items-start justify-between">
-                    <div className="w-16 h-16 rounded-2xl bg-[#eef9df] text-[#123c2c] flex items-center justify-center group-hover:scale-105 group-hover:bg-[#123c2c] group-hover:text-white transition-all duration-300">
-                      <FileText size={30} strokeWidth={1.8} />
+                  <div className="relative flex flex-col h-full">
+                    <div className="flex items-start justify-between">
+                      <div className="w-16 h-16 rounded-2xl bg-[#dff8eb] text-[#19714e] flex items-center justify-center group-hover:scale-105 group-hover:bg-[#19714e] group-hover:text-white transition-all duration-300">
+                        <UploadCloud size={30} strokeWidth={1.8} />
+                      </div>
+
+                      <span className="text-xs font-bold text-[#dfe7e2] group-hover:text-[#b8d7ca] transition-colors">
+                        01
+                      </span>
                     </div>
 
-                    <span className="text-xs font-bold text-[#dfe7e2] group-hover:text-[#b8d7ca] transition-colors">
-                      02
+                    <div className="mt-7">
+                      <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
+                        Upload Resume
+                      </h3>
+
+                      <p className="text-sm text-[#68756f] leading-6 mt-3 max-w-md">
+                        Already have a resume? Upload your existing PDF or DOC
+                        file and continue your career journey.
+                      </p>
+                    </div>
+
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={14} className="text-[#19714e]" />
+                        </div>
+                        <span className="text-xs font-medium text-[#52615a]">
+                          PDF, DOC & DOCX supported
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={14} className="text-[#19714e]" />
+                        </div>
+                        <span className="text-xs font-medium text-[#52615a]">
+                          Secure backend storage
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#dff8eb] flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={14} className="text-[#19714e]" />
+                        </div>
+                        <span className="text-xs font-medium text-[#52615a]">
+                          Fast resume processing
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-auto pt-8">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMode("upload");
+                        }}
+                        className="w-full py-3.5 px-5 rounded-xl bg-[#123c2c] hover:bg-[#19714e] text-white text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-md shadow-[#123c2c]/10"
+                      >
+                        <UploadCloud size={17} />
+                        <span>Upload Resume</span>
+                        <ArrowRight size={17} className="transition-transform duration-300 group-hover:translate-x-1" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* ============================================================= */}
+                {/* CREATE RESUME */}
+                {/* ============================================================= */}
+                <motion.div
+                  variants={fadeIn}
+                  whileHover={{ y: -6 }}
+                  transition={{ duration: 0.25 }}
+                  onClick={() => setMode("create")}
+                  className="group relative overflow-hidden bg-white border border-[#dfe7e2] hover:border-[#19714e]/60 rounded-[28px] p-7 sm:p-9 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/10 transition-all duration-300 cursor-pointer min-h-97.5 flex flex-col"
+                >
+                  <div className="absolute -right-16 -top-16 w-40 h-40 rounded-full bg-[#b9ef84]/25 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  <div className="relative flex flex-col h-full">
+                    <div className="flex items-start justify-between">
+                      <div className="w-16 h-16 rounded-2xl bg-[#eef9df] text-[#123c2c] flex items-center justify-center group-hover:scale-105 group-hover:bg-[#123c2c] group-hover:text-white transition-all duration-300">
+                        <FileText size={30} strokeWidth={1.8} />
+                      </div>
+
+                      <span className="text-xs font-bold text-[#dfe7e2] group-hover:text-[#b8d7ca] transition-colors">
+                        02
+                      </span>
+                    </div>
+
+                    <div className="mt-7">
+                      <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
+                        Create Resume
+                      </h3>
+
+                      <p className="text-sm text-[#68756f] leading-6 mt-3 max-w-md">
+                        Don't have a resume yet? Build a professional resume
+                        step-by-step with our guided builder.
+                      </p>
+                    </div>
+
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={14} className="text-[#19714e]" />
+                        </div>
+                        <span className="text-xs font-medium text-[#52615a]">
+                          Guided resume builder
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={14} className="text-[#19714e]" />
+                        </div>
+                        <span className="text-xs font-medium text-[#52615a]">
+                          Professional resume structure
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={14} className="text-[#19714e]" />
+                        </div>
+                        <span className="text-xs font-medium text-[#52615a]">
+                          Generate a ready-to-use PDF
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-auto pt-8">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMode("create");
+                        }}
+                        className="w-full py-3.5 px-5 rounded-xl bg-white border border-[#123c2c] text-[#123c2c] hover:bg-[#123c2c] hover:text-white text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300"
+                      >
+                        <FileText size={17} />
+                        <span>Start Building</span>
+                        <ArrowRight size={17} className="transition-transform duration-300 group-hover:translate-x-1" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Resume journey */}
+              <motion.div
+                variants={fadeIn}
+                className="mt-8 flex items-center justify-center"
+              >
+                <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/70 border border-[#dfe7e2]">
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
+                      1
+                    </span>
+                    <span className="text-[11px] font-semibold text-[#52615a]">
+                      Choose
                     </span>
                   </div>
 
-                  <div className="mt-7">
-                    <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
-                      Create Resume
-                    </h3>
+                  <ArrowRight size={13} className="text-[#b1bdb7]" />
 
-                    <p className="text-sm text-[#68756f] leading-6 mt-3 max-w-md">
-                      Don't have a resume yet? Build a professional resume
-                      step-by-step with our guided builder.
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
+                      2
+                    </span>
+                    <span className="text-[11px] font-semibold text-[#52615a]">
+                      Build
+                    </span>
                   </div>
 
-                  <div className="mt-6 space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={14} className="text-[#19714e]" />
-                      </div>
-                      <span className="text-xs font-medium text-[#52615a]">
-                        Guided resume builder
-                      </span>
-                    </div>
+                  <ArrowRight size={13} className="text-[#b1bdb7]" />
 
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={14} className="text-[#19714e]" />
-                      </div>
-                      <span className="text-xs font-medium text-[#52615a]">
-                        Professional resume structure
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-full bg-[#eef9df] flex items-center justify-center shrink-0">
-                        <CheckCircle2 size={14} className="text-[#19714e]" />
-                      </div>
-                      <span className="text-xs font-medium text-[#52615a]">
-                        Generate a ready-to-use PDF
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-auto pt-8">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMode("create");
-                      }}
-                      className="w-full py-3.5 px-5 rounded-xl bg-white border border-[#123c2c] text-[#123c2c] hover:bg-[#123c2c] hover:text-white text-sm font-bold flex items-center justify-center gap-2 transition-all duration-300"
-                    >
-                      <FileText size={17} />
-                      <span>Start Building</span>
-                      <ArrowRight size={17} className="transition-transform duration-300 group-hover:translate-x-1" />
-                    </button>
+                  <div className="flex items-center gap-2">
+                    <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
+                      3
+                    </span>
+                    <span className="text-[11px] font-semibold text-[#52615a]">
+                      Apply
+                    </span>
                   </div>
                 </div>
               </motion.div>
-            </div>
-
-            {/* Resume journey */}
-            <motion.div
-              variants={fadeIn}
-              className="mt-8 flex items-center justify-center"
-            >
-              <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/70 border border-[#dfe7e2]">
-                <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
-                    1
-                  </span>
-                  <span className="text-[11px] font-semibold text-[#52615a]">
-                    Choose
-                  </span>
-                </div>
-
-                <ArrowRight size={13} className="text-[#b1bdb7]" />
-
-                <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
-                    2
-                  </span>
-                  <span className="text-[11px] font-semibold text-[#52615a]">
-                    Build
-                  </span>
-                </div>
-
-                <ArrowRight size={13} className="text-[#b1bdb7]" />
-
-                <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center text-[10px] font-bold">
-                    3
-                  </span>
-                  <span className="text-[11px] font-semibold text-[#52615a]">
-                    Apply
-                  </span>
-                </div>
-              </div>
-            </motion.div>
             </div>
           </motion.div>
         )}
@@ -1988,8 +1987,8 @@ export default function ResumePage() {
                         if (
                           file.size >
                           10 *
-                            1024 *
-                            1024
+                          1024 *
+                          1024
                         ) {
                           setErrorMessage(
                             "Resume must be smaller than 10MB."
@@ -2369,19 +2368,19 @@ export default function ResumePage() {
                     {formData
                       .education
                       .length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeDynamicItem(
-                            "education",
-                            idx
-                          )
-                        }
-                        className="absolute top-4 right-4 text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeDynamicItem(
+                              "education",
+                              idx
+                            )
+                          }
+                          className="absolute top-4 right-4 text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <Input
@@ -2532,19 +2531,19 @@ export default function ResumePage() {
                     {formData
                       .experience
                       .length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeDynamicItem(
-                            "experience",
-                            idx
-                          )
-                        }
-                        className="absolute top-4 right-4 text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeDynamicItem(
+                              "experience",
+                              idx
+                            )
+                          }
+                          className="absolute top-4 right-4 text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Input
@@ -2649,24 +2648,24 @@ export default function ResumePage() {
                               .highlights
                               .length >
                               1 && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removeHighlight(
-                                    "experience",
-                                    idx,
-                                    hIdx
-                                  )
-                                }
-                                className="text-red-500 hover:text-red-700 p-1"
-                              >
-                                <Trash2
-                                  size={
-                                    14
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    removeHighlight(
+                                      "experience",
+                                      idx,
+                                      hIdx
+                                    )
                                   }
-                                />
-                              </button>
-                            )}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                >
+                                  <Trash2
+                                    size={
+                                      14
+                                    }
+                                  />
+                                </button>
+                              )}
                           </div>
                         )
                       )}
@@ -2732,19 +2731,19 @@ export default function ResumePage() {
                     {formData
                       .projects
                       .length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          removeDynamicItem(
-                            "projects",
-                            idx
-                          )
-                        }
-                        className="absolute top-4 right-4 text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removeDynamicItem(
+                              "projects",
+                              idx
+                            )
+                          }
+                          className="absolute top-4 right-4 text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Input
@@ -3031,145 +3030,69 @@ export default function ResumePage() {
 
         {mode ===
           "created_success" && (
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 16,
-            }}
-            animate={{
-              opacity: 1,
-              y: 0,
-            }}
-            className="max-w-4xl mx-auto space-y-8"
-          >
-            {/* Success Banner */}
-            <div className="bg-white border border-[#dfe7e2] rounded-3xl p-8 sm:p-10 shadow-sm text-center space-y-6">
-              <div className="w-16 h-16 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center mx-auto">
-                <CheckCircle2 size={36} />
-              </div>
-
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold font-['Space_Grotesk'] text-[#12221d]">
-                  Resume Generated Successfully!
-                </h2>
-
-                <p className="text-xs sm:text-sm text-[#68756f] max-w-md mx-auto mt-2 leading-relaxed">
-                  Your resume details have been processed and your PDF document is ready to download.
-                </p>
-              </div>
-
-              {activeDownloadUrl && (
-                <div className="p-4.5 rounded-2xl bg-[#dff8eb] border border-[#19714e]/30 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-2xl mx-auto text-left shadow-xs">
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-10 h-10 rounded-xl bg-[#19714e] text-white flex items-center justify-center shrink-0 shadow-xs">
-                      <Download size={20} />
-                    </div>
-
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-[#12221d] block">
-                        PDF Resume Ready
-                      </span>
-
-                      <span className="text-[11px] text-[#52615a] truncate block font-mono">
-                        {activeDownloadUrl}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      resumeService.downloadResume(
-                        activeDownloadUrl
-                      )
-                    }
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#19714e] hover:bg-[#123c2c] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors shrink-0"
-                  >
-                    <Download size={15} />
-                    <span>
-                      Download PDF
-                    </span>
-                  </button>
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: 16,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              className="max-w-4xl mx-auto space-y-8"
+            >
+              {/* Success Banner */}
+              <div className="bg-white border border-[#dfe7e2] rounded-3xl p-8 sm:p-10 shadow-sm text-center space-y-6">
+                <div className="w-16 h-16 rounded-full bg-[#dff8eb] text-[#19714e] flex items-center justify-center mx-auto">
+                  <CheckCircle2 size={36} />
                 </div>
-              )}
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold font-['Space_Grotesk'] text-[#12221d]">
+                    Resume Generated Successfully!
+                  </h2>
+
+                  <p className="text-xs sm:text-sm text-[#68756f] max-w-md mx-auto mt-2 leading-relaxed">
+                    Your resume details have been processed and your PDF document is ready to download.
+                  </p>
+                </div>
+
                 {activeDownloadUrl && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      resumeService.downloadResume(
-                        activeDownloadUrl
-                      )
-                    }
-                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#19714e] hover:bg-[#123c2c] text-white font-bold text-xs shadow-md transition-all inline-flex items-center justify-center gap-2"
-                  >
-                    <Download size={18} />
+                  <div className="p-4.5 rounded-2xl bg-[#dff8eb] border border-[#19714e]/30 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-2xl mx-auto text-left shadow-xs">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="w-10 h-10 rounded-xl bg-[#19714e] text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <Download size={20} />
+                      </div>
 
-                    <span>
-                      Download Resume
-                    </span>
-                  </button>
+                      <div className="min-w-0">
+                        <span className="text-xs font-bold text-[#12221d] block">
+                          PDF Resume Ready
+                        </span>
+
+                        <span className="text-[11px] text-[#52615a] truncate block font-mono">
+                          {activeDownloadUrl}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        resumeService.downloadResume(
+                          activeDownloadUrl
+                        )
+                      }
+                      className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#19714e] hover:bg-[#123c2c] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors shrink-0"
+                    >
+                      <Download size={15} />
+                      <span>
+                        Download PDF
+                      </span>
+                    </button>
+                  </div>
                 )}
 
-                <button
-                  type="button"
-                  onClick={
-                    handleProceedToHome
-                  }
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white border border-[#dfe7e2] hover:bg-[#f7faf8] text-[#12221d] font-bold text-xs shadow-xs transition-all inline-flex items-center justify-center gap-2"
-                >
-                  <span>
-                    Proceed to Dashboard
-                  </span>
-
-                  <ArrowRight
-                    size={16}
-                  />
-                </button>
-              </div>
-            </div>
-
-            {/* Generated Resume Preview */}
-            {generatedResume && (
-              <div className="bg-white border border-[#dfe7e2] rounded-3xl p-8 sm:p-12 shadow-sm space-y-8 text-left">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#dfe7e2] pb-6 gap-4">
-                  <div>
-                    <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d]">
-                      {generatedResume.name ||
-                        formData.name ||
-                        "Generated Resume"}
-                    </h3>
-
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#52615a] mt-2">
-                      {(generatedResume.contact?.email ||
-                        formData.contact.email) && (
-                        <span>
-                          {generatedResume.contact?.email ||
-                            formData.contact.email}
-                        </span>
-                      )}
-
-                      {(generatedResume.contact?.phone ||
-                        formData.contact.phone) && (
-                        <span>
-                          •{" "}
-                          {generatedResume.contact?.phone ||
-                            formData.contact.phone}
-                        </span>
-                      )}
-
-                      {(generatedResume.contact?.location ||
-                        formData.contact.location) && (
-                        <span>
-                          •{" "}
-                          {generatedResume.contact?.location ||
-                            formData.contact.location}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
                   {activeDownloadUrl && (
                     <button
                       type="button"
@@ -3178,210 +3101,286 @@ export default function ResumePage() {
                           activeDownloadUrl
                         )
                       }
-                      className="px-4 py-2.5 rounded-xl bg-[#dff8eb] text-[#19714e] hover:bg-[#19714e] hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors border border-[#19714e]/20 shrink-0"
+                      className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#19714e] hover:bg-[#123c2c] text-white font-bold text-xs shadow-md transition-all inline-flex items-center justify-center gap-2"
                     >
-                      <Download
-                        size={15}
-                      />
+                      <Download size={18} />
 
                       <span>
                         Download Resume
                       </span>
                     </button>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={
+                      handleProceedToHome
+                    }
+                    className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white border border-[#dfe7e2] hover:bg-[#f7faf8] text-[#12221d] font-bold text-xs shadow-xs transition-all inline-flex items-center justify-center gap-2"
+                  >
+                    <span>
+                      Proceed to Dashboard
+                    </span>
+
+                    <ArrowRight
+                      size={16}
+                    />
+                  </button>
                 </div>
-
-                {/* Work Experience */}
-                {((generatedResume.experience &&
-                  generatedResume.experience
-                    .length > 0) ||
-                  (formData.experience &&
-                    formData.experience
-                      .length > 0)) && (
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#19714e] font-['Space_Grotesk']">
-                      Work Experience
-                    </h4>
-
-                    <div className="space-y-5">
-                      {(
-                        generatedResume.experience ||
-                        formData.experience
-                      ).map(
-                        (exp, idx) => (
-                          <div
-                            key={idx}
-                            className="space-y-1.5 bg-[#f7faf8] p-4 rounded-2xl border border-[#dfe7e2]/60"
-                          >
-                            <div className="flex items-center justify-between text-xs font-bold text-[#12221d]">
-                              <span>
-                                {exp.role ||
-                                  "Role"}{" "}
-                                •{" "}
-                                {exp.company ||
-                                  "Company"}
-                              </span>
-
-                              <span className="text-[#68756f] font-normal">
-                                {
-                                  exp.start_date
-                                }{" "}
-                                -{" "}
-                                {
-                                  exp.end_date
-                                }
-                              </span>
-                            </div>
-
-                            {exp.highlights &&
-                              exp
-                                .highlights
-                                .length >
-                                0 && (
-                                <ul className="list-disc list-inside text-xs text-[#52615a] space-y-1 pt-1">
-                                  {exp.highlights
-                                    .filter(
-                                      Boolean
-                                    )
-                                    .map(
-                                      (
-                                        hl,
-                                        hIdx
-                                      ) => (
-                                        <li
-                                          key={
-                                            hIdx
-                                          }
-                                        >
-                                          {
-                                            hl
-                                          }
-                                        </li>
-                                      )
-                                    )}
-                                </ul>
-                              )}
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Education */}
-                {((generatedResume.education &&
-                  generatedResume.education
-                    .length > 0) ||
-                  (formData.education &&
-                    formData.education
-                      .length > 0)) && (
-                  <div className="space-y-4 pt-4 border-t border-[#dfe7e2]">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#19714e] font-['Space_Grotesk']">
-                      Education
-                    </h4>
-
-                    <div className="space-y-3">
-                      {(
-                        generatedResume.education ||
-                        formData.education
-                      ).map(
-                        (edu, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between text-xs bg-[#f7faf8] p-4 rounded-2xl border border-[#dfe7e2]/60"
-                          >
-                            <div>
-                              <span className="font-bold text-[#12221d] block">
-                                {
-                                  edu.institution
-                                }
-                              </span>
-
-                              <span className="text-[#52615a]">
-                                {
-                                  edu.degree
-                                }{" "}
-                                in{" "}
-                                {
-                                  edu.major
-                                }{" "}
-                                {edu.gpa
-                                  ? `(GPA: ${edu.gpa})`
-                                  : ""}
-                              </span>
-                            </div>
-
-                            <span className="text-[#68756f]">
-                              {
-                                edu.start_date
-                              }{" "}
-                              -{" "}
-                              {
-                                edu.end_date
-                              }
-                            </span>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Skills */}
-                {((generatedResume.skills &&
-                  generatedResume.skills
-                    .length > 0) ||
-                  (formData.skills &&
-                    formData.skills
-                      .length > 0)) && (
-                  <div className="space-y-4 pt-4 border-t border-[#dfe7e2]">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#19714e] font-['Space_Grotesk']">
-                      Skills
-                    </h4>
-
-                    <div className="flex flex-wrap gap-2">
-                      {(
-                        generatedResume.skills ||
-                        formData.skills
-                      )
-                        .flatMap(
-                          (s) =>
-                            Array.isArray(
-                              s.skills
-                            )
-                              ? s.skills
-                              : typeof s.skills ===
-                                "string"
-                              ? s.skills.split(
-                                  ","
-                                )
-                              : [s]
-                        )
-                        .map(
-                          (
-                            skillItem,
-                            idx
-                          ) => (
-                            <span
-                              key={
-                                idx
-                              }
-                              className="px-3 py-1 bg-[#f7faf8] border border-[#dfe7e2] text-[#12221d] font-medium text-xs rounded-lg"
-                            >
-                              {typeof skillItem ===
-                              "string"
-                                ? skillItem.trim()
-                                : skillItem}
-                            </span>
-                          )
-                        )}
-                    </div>
-                  </div>
-                )}
               </div>
-            )}
-          </motion.div>
-        )}
+
+              {/* Generated Resume Preview */}
+              {generatedResume && (
+                <div className="bg-white border border-[#dfe7e2] rounded-3xl p-8 sm:p-12 shadow-sm space-y-8 text-left">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#dfe7e2] pb-6 gap-4">
+                    <div>
+                      <h3 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d]">
+                        {generatedResume.name ||
+                          formData.name ||
+                          "Generated Resume"}
+                      </h3>
+
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#52615a] mt-2">
+                        {(generatedResume.contact?.email ||
+                          formData.contact.email) && (
+                            <span>
+                              {generatedResume.contact?.email ||
+                                formData.contact.email}
+                            </span>
+                          )}
+
+                        {(generatedResume.contact?.phone ||
+                          formData.contact.phone) && (
+                            <span>
+                              •{" "}
+                              {generatedResume.contact?.phone ||
+                                formData.contact.phone}
+                            </span>
+                          )}
+
+                        {(generatedResume.contact?.location ||
+                          formData.contact.location) && (
+                            <span>
+                              •{" "}
+                              {generatedResume.contact?.location ||
+                                formData.contact.location}
+                            </span>
+                          )}
+                      </div>
+                    </div>
+
+                    {activeDownloadUrl && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          resumeService.downloadResume(
+                            activeDownloadUrl
+                          )
+                        }
+                        className="px-4 py-2.5 rounded-xl bg-[#dff8eb] text-[#19714e] hover:bg-[#19714e] hover:text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors border border-[#19714e]/20 shrink-0"
+                      >
+                        <Download
+                          size={15}
+                        />
+
+                        <span>
+                          Download Resume
+                        </span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Work Experience */}
+                  {((generatedResume.experience &&
+                    generatedResume.experience
+                      .length > 0) ||
+                    (formData.experience &&
+                      formData.experience
+                        .length > 0)) && (
+                      <div className="space-y-4">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#19714e] font-['Space_Grotesk']">
+                          Work Experience
+                        </h4>
+
+                        <div className="space-y-5">
+                          {(
+                            generatedResume.experience ||
+                            formData.experience
+                          ).map(
+                            (exp, idx) => (
+                              <div
+                                key={idx}
+                                className="space-y-1.5 bg-[#f7faf8] p-4 rounded-2xl border border-[#dfe7e2]/60"
+                              >
+                                <div className="flex items-center justify-between text-xs font-bold text-[#12221d]">
+                                  <span>
+                                    {exp.role ||
+                                      "Role"}{" "}
+                                    •{" "}
+                                    {exp.company ||
+                                      "Company"}
+                                  </span>
+
+                                  <span className="text-[#68756f] font-normal">
+                                    {
+                                      exp.start_date
+                                    }{" "}
+                                    -{" "}
+                                    {
+                                      exp.end_date
+                                    }
+                                  </span>
+                                </div>
+
+                                {exp.highlights &&
+                                  exp
+                                    .highlights
+                                    .length >
+                                  0 && (
+                                    <ul className="list-disc list-inside text-xs text-[#52615a] space-y-1 pt-1">
+                                      {exp.highlights
+                                        .filter(
+                                          Boolean
+                                        )
+                                        .map(
+                                          (
+                                            hl,
+                                            hIdx
+                                          ) => (
+                                            <li
+                                              key={
+                                                hIdx
+                                              }
+                                            >
+                                              {
+                                                hl
+                                              }
+                                            </li>
+                                          )
+                                        )}
+                                    </ul>
+                                  )}
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Education */}
+                  {((generatedResume.education &&
+                    generatedResume.education
+                      .length > 0) ||
+                    (formData.education &&
+                      formData.education
+                        .length > 0)) && (
+                      <div className="space-y-4 pt-4 border-t border-[#dfe7e2]">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#19714e] font-['Space_Grotesk']">
+                          Education
+                        </h4>
+
+                        <div className="space-y-3">
+                          {(
+                            generatedResume.education ||
+                            formData.education
+                          ).map(
+                            (edu, idx) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between text-xs bg-[#f7faf8] p-4 rounded-2xl border border-[#dfe7e2]/60"
+                              >
+                                <div>
+                                  <span className="font-bold text-[#12221d] block">
+                                    {
+                                      edu.institution
+                                    }
+                                  </span>
+
+                                  <span className="text-[#52615a]">
+                                    {
+                                      edu.degree
+                                    }{" "}
+                                    in{" "}
+                                    {
+                                      edu.major
+                                    }{" "}
+                                    {edu.gpa
+                                      ? `(GPA: ${edu.gpa})`
+                                      : ""}
+                                  </span>
+                                </div>
+
+                                <span className="text-[#68756f]">
+                                  {
+                                    edu.start_date
+                                  }{" "}
+                                  -{" "}
+                                  {
+                                    edu.end_date
+                                  }
+                                </span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                  {/* Skills */}
+                  {((generatedResume.skills &&
+                    generatedResume.skills
+                      .length > 0) ||
+                    (formData.skills &&
+                      formData.skills
+                        .length > 0)) && (
+                      <div className="space-y-4 pt-4 border-t border-[#dfe7e2]">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#19714e] font-['Space_Grotesk']">
+                          Skills
+                        </h4>
+
+                        <div className="flex flex-wrap gap-2">
+                          {(
+                            generatedResume.skills ||
+                            formData.skills
+                          )
+                            .flatMap(
+                              (s) =>
+                                Array.isArray(
+                                  s.skills
+                                )
+                                  ? s.skills
+                                  : typeof s.skills ===
+                                    "string"
+                                    ? s.skills.split(
+                                      ","
+                                    )
+                                    : [s]
+                            )
+                            .map(
+                              (
+                                skillItem,
+                                idx
+                              ) => (
+                                <span
+                                  key={
+                                    idx
+                                  }
+                                  className="px-3 py-1 bg-[#f7faf8] border border-[#dfe7e2] text-[#12221d] font-medium text-xs rounded-lg"
+                                >
+                                  {typeof skillItem ===
+                                    "string"
+                                    ? skillItem.trim()
+                                    : skillItem}
+                                </span>
+                              )
+                            )}
+                        </div>
+                      </div>
+                    )}
+                </div>
+              )}
+            </motion.div>
+          )}
       </main>
     </div>
   );

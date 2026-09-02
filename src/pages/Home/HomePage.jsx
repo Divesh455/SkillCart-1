@@ -745,19 +745,7 @@ export default function HomePage() {
               LEFT SIDEBAR
           ================================================== */}
 
-          <motion.aside
-            initial={{
-              opacity: 0,
-              x: -16,
-            }}
-            animate={{
-              opacity: 1,
-              x: 0,
-            }}
-            transition={{
-              duration: 0.35,
-              delay: 0.1,
-            }}
+          <aside
             className="
               hidden
               lg:block
@@ -1420,7 +1408,7 @@ export default function HomePage() {
             ================================================== */}
             <ResumeAnalysisSection />
 
-          </motion.aside>
+          </aside>
 
 
           {/* ==================================================
