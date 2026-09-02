@@ -12,6 +12,7 @@ import {
   Loader2,
   ShieldCheck,
   Zap,
+  FileText,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -20,7 +21,7 @@ import Input from "../../components/ui/Input";
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, resumeId } = useAuth();
 
   // Mode toggle: true = Login, false = Register
   const [isLogin, setIsLogin] = useState(true);
@@ -102,8 +103,27 @@ export default function AuthPage() {
           password: formData.password,
         });
 
-        // Onboarding redirection logic per specification
-        if (response?.isNewUser) {
+        // Check user object from response for valid resumeId
+        const userObj = response?.user;
+        const userResumeId =
+          userObj?.resumeId ||
+          userObj?.resume_id ||
+          userObj?.res_id ||
+          userObj?.Rid ||
+          userObj?.rid ||
+          response?.resumeId ||
+          response?.res_id ||
+          response?.Rid ||
+          response?.rid;
+
+        const hasValidResumeId = Boolean(
+          userResumeId &&
+          userResumeId !== "null" &&
+          userResumeId !== "undefined" &&
+          String(userResumeId).trim() !== ""
+        );
+
+        if (!hasValidResumeId) {
           navigate("/resume");
         } else {
           navigate("/home");
@@ -116,15 +136,22 @@ export default function AuthPage() {
             password: formData.password,
           });
 
-          // Pre-populate flag in localStorage for next login route redirection
           localStorage.setItem("justRegistered", "true");
+          localStorage.setItem("isNewUser", "true");
 
-          // Successful register -> go to login with same email and password
-          setIsLogin(true);
-          setApiSuccess("Registration successful! Please sign in with your credentials.");
+          try {
+            await login({
+              email: formData.email.trim(),
+              password: formData.password,
+            });
+          } catch (loginErr) {
+            console.warn("Auto-login post registration error:", loginErr);
+          }
+
+          // Redirect user directly to /resume on successful registration
+          navigate("/resume");
         } catch (err) {
           if (err.status === 403) {
-            // Receive 403 error -> go to login with same email and password
             localStorage.setItem("justRegistered", "true");
             setIsLogin(true);
             setApiSuccess("Account already exists. Please sign in with your credentials.");
@@ -298,6 +325,26 @@ export default function AuthPage() {
                 >
                   <CheckCircle2 size={16} className="shrink-0 mt-0.5 text-[#19714e]" />
                   <span>{apiSuccess}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Active Resume ID Indicator */}
+            <AnimatePresence>
+              {resumeId && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  className="mb-5 p-3 rounded-xl bg-[#f7faf8] border border-[#dfe7e2] flex items-center justify-between text-xs text-[#12221d]"
+                >
+                  <div className="flex items-center gap-2 font-medium">
+                    <FileText size={16} className="text-[#19714e]" />
+                    <span>Resume ID: <strong className="font-bold text-[#19714e]">#{resumeId}</strong></span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#dff8eb] text-[#19714e] font-semibold border border-[#19714e]/20">
+                    Fetched & Active
+                  </span>
                 </motion.div>
               )}
             </AnimatePresence>

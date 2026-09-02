@@ -682,7 +682,7 @@ export default function ResumePage() {
     downloadUrl: contextDownloadUrl,
   } = useApp();
 
-  const { completeResume } = useAuth();
+  const { completeResume, setResumeId } = useAuth();
 
   const fileInputRef = useRef(null);
 
@@ -846,32 +846,22 @@ export default function ResumePage() {
 
       setMode("upload_success");
 
-      setTimeout(() => {
-        handleProceedToHome();
-      }, 1500);
-
       const extractedRid =
-        extractRidFromResponse(apiResult);
+        extractRidFromResponse(apiResult) ||
+        apiResult?.data?.res_id ||
+        apiResult?.data?.resumeId ||
+        apiResult?.res_id ||
+        apiResult?.resumeId ||
+        apiResult?.id;
 
-      if (extractedRid) {
-        localStorage.setItem(
-          "res_id",
-          extractedRid
-        );
+      const newId = extractedRid || "res_" + Date.now();
 
-        localStorage.setItem(
-          "resume_id",
-          extractedRid
-        );
+      if (setResumeId) {
+        setResumeId(String(newId));
       }
 
       setResumeState({
-        id:
-          extractedRid ||
-          apiResult?.data?.res_id ||
-          apiResult?.res_id ||
-          apiResult?.id ||
-          "res_" + Date.now(),
+        id: String(newId),
 
         fileName: file.name,
 
@@ -879,6 +869,12 @@ export default function ResumePage() {
 
         download_url: extractedUrl,
       });
+
+      setIsProcessing(false);
+
+      completeResume();
+
+      navigate("/home");
     } catch (err) {
       console.warn(
         "Resume upload API endpoint error, using fallback state:",
@@ -889,18 +885,22 @@ export default function ResumePage() {
 
       setUploadProgress(100);
 
-      setIsProcessing(false);
+      const fallbackId = "res_" + Date.now();
 
-      setMode("upload_success");
-
-      setTimeout(() => {
-        handleProceedToHome();
-      }, 1500);
+      if (setResumeId) {
+        setResumeId(fallbackId);
+      }
 
       setResumeState({
-        id: "res_" + Date.now(),
+        id: fallbackId,
         fileName: file.name,
       });
+
+      setIsProcessing(false);
+
+      completeResume();
+
+      navigate("/home");
     }
   };
 
@@ -1289,16 +1289,22 @@ export default function ResumePage() {
         parsedResume
       );
 
-      setMode(
-        "created_success"
-      );
+      const extractedRid =
+        extractRidFromResponse(apiResult) ||
+        apiResult?.data?.res_id ||
+        apiResult?.data?.resumeId ||
+        apiResult?.res_id ||
+        apiResult?.resumeId ||
+        apiResult?.id;
+
+      const newId = extractedRid || "res_" + Date.now();
+
+      if (setResumeId) {
+        setResumeId(String(newId));
+      }
 
       setResumeState({
-        id:
-          apiResult?.data?.res_id ||
-          apiResult?.res_id ||
-          apiResult?.id ||
-          "res_" + Date.now(),
+        id: String(newId),
 
         formData: payload,
 
@@ -1307,6 +1313,12 @@ export default function ResumePage() {
         download_url:
           extractedUrl,
       });
+
+      setIsProcessing(false);
+
+      completeResume();
+
+      navigate("/home");
     } catch (err) {
       console.error(
         "Resume generation API error:",
@@ -1558,7 +1570,7 @@ export default function ResumePage() {
             </motion.div>
 
             {/* Analyze Resume */}
-            <motion.div
+            {/* <motion.div
               variants={fadeIn}
               whileHover={{ y: -4 }}
               className="bg-white border border-[#dfe7e2] hover:border-[#19714e] rounded-3xl p-8 shadow-sm hover:shadow-xl hover:shadow-[#123c2c]/5 transition-all duration-300 flex flex-col justify-between group cursor-pointer"
@@ -1568,7 +1580,7 @@ export default function ResumePage() {
                 setErrorMessage("");
                 setMode("analyze");
               }}
-            >
+             >
               <div>
                 <div className="w-14 h-14 rounded-2xl bg-[#dff8eb] text-[#19714e] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Sparkles size={28} />
@@ -1627,7 +1639,7 @@ export default function ResumePage() {
 
                 <ArrowRight size={16} />
               </button>
-            </motion.div>
+            </motion.div> */}
           </motion.div>
         )}
 

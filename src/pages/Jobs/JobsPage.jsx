@@ -113,25 +113,26 @@ export default function JobsPage() {
       setSaveMessage("");
 
       if (isAlreadySaved) {
-        await saveJobService.unsaveJob(jobId);
-
         setSavedJobIds((previous) => {
           const next = new Set(previous);
           next.delete(String(jobId));
           return next;
         });
 
-        setSavedJobs((previous) =>
-          previous.filter(
+        setSavedJobs((previous) => {
+          const updated = previous.filter(
             (savedJob) =>
               String(savedJob?.id ?? savedJob?.job_id ?? savedJob?._id) !== String(jobId)
-          )
-        );
+          );
+          try {
+            localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(updated));
+          } catch (e) {}
+          return updated;
+        });
 
+        await saveJobService.unsaveJob(jobId);
         setSaveMessage("Job removed from saved jobs.");
       } else {
-        await saveJobService.saveJob(jobId);
-
         setSavedJobIds((previous) => {
           const next = new Set(previous);
           next.add(String(jobId));
@@ -139,31 +140,27 @@ export default function JobsPage() {
         });
 
         if (job) {
-          setSavedJobs((previous) => [...previous, job]);
+          setSavedJobs((previous) => {
+            const updated = [...previous, job];
+            try {
+              localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(updated));
+            } catch (e) {}
+            return updated;
+          });
         }
 
+        await saveJobService.saveJob(jobId, job);
         setSaveMessage("Job saved successfully.");
       }
-
       setTimeout(() => {
         setSaveMessage("");
       }, 3000);
-
-    } catch (error) {
-      console.error(
-        "Save/Unsave job failed:",
-        error
-      );
-
-      setSaveMessage(
-        error?.message ||
-        "Unable to update saved job. Please try again."
-      );
-
+    } catch (err) {
+      console.error("Save job API error:", err);
+      setSaveMessage(err.message || "Failed to update saved status.");
       setTimeout(() => {
         setSaveMessage("");
       }, 4000);
-
     } finally {
       setSavingJobId(null);
     }

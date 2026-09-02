@@ -4,7 +4,7 @@
  */
 
 const RESUME_BASE_URL = "https://skillcart-resume.onrender.com";
-const GENERATE_RESUME_BASE_URL = "https://skillcart-ai.fastapicloud.dev";
+const GENERATE_RESUME_BASE_URL = "https://skillcart-ai.onrender.com";
 const PROXY_RESUME_URL = "/api-proxy/resume-server";
 
 /**
@@ -16,11 +16,32 @@ const PROXY_RESUME_URL = "/api-proxy/resume-server";
 export function extractRidFromResponse(apiResult) {
   if (!apiResult) return null;
 
-  // Convert response to string representation
+  // 1. Direct field check on response object (highest priority for { "resumeId": 99, "success": true })
+  if (typeof apiResult === "object" && apiResult !== null) {
+    const directId =
+      apiResult.resumeId ??
+      apiResult.resume_id ??
+      apiResult.res_id ??
+      apiResult.Rid ??
+      apiResult.rid ??
+      apiResult.id ??
+      apiResult.data?.resumeId ??
+      apiResult.data?.resume_id ??
+      apiResult.data?.res_id ??
+      apiResult.data?.Rid ??
+      apiResult.data?.rid ??
+      apiResult.data?.id;
+
+    if (directId !== undefined && directId !== null && directId !== "") {
+      return String(directId).trim();
+    }
+  }
+
+  // 2. String representation search (fallback for "File Uploaded Succesfully for Rid81")
   let strToSearch = "";
   if (typeof apiResult === "string") {
     strToSearch = apiResult;
-  } else if (typeof apiResult === "object") {
+  } else if (typeof apiResult === "object" && apiResult !== null) {
     strToSearch = [
       apiResult.message,
       apiResult.detail,
@@ -28,35 +49,20 @@ export function extractRidFromResponse(apiResult) {
       apiResult.text,
       apiResult.data?.message,
       apiResult.data?.detail,
-      JSON.stringify(apiResult),
     ]
       .filter(Boolean)
       .join(" ");
   }
 
-  // Match pattern "File Uploaded Succesfully for Rid" followed by id
-  // Matches "File Uploaded Succesfully for Rid81", "File Uploaded Succesfully for Rid 81", "for Rid_81", "Rid-81"
-  const match =
-    strToSearch.match(/File Uploaded Succesfully for Rid\s*[:\-_]?\s*([a-zA-Z0-9_-]+)/i) ||
-    strToSearch.match(/for\s*Rid\s*[:\-_]?\s*([a-zA-Z0-9_-]+)/i) ||
-    strToSearch.match(/Rid\s*[:\-_]?\s*([a-zA-Z0-9_-]+)/i);
+  if (strToSearch) {
+    const match =
+      strToSearch.match(/File Uploaded Succesfully for Rid\s*[:\-_]?\s*([a-zA-Z0-9_-]+)/i) ||
+      strToSearch.match(/for\s*Rid\s*[:\-_]?\s*([a-zA-Z0-9_-]+)/i) ||
+      strToSearch.match(/Rid\s*[:\-_]?\s*([a-zA-Z0-9_-]+)/i);
 
-  if (match && match[1]) {
-    return match[1].trim();
-  }
-
-  // Fallback to direct field check on response object
-  if (typeof apiResult === "object") {
-    return (
-      apiResult.res_id ||
-      apiResult.resume_id ||
-      apiResult.rid ||
-      apiResult.data?.res_id ||
-      apiResult.data?.resume_id ||
-      apiResult.data?.id ||
-      apiResult.id ||
-      null
-    );
+    if (match && match[1]) {
+      return match[1].trim();
+    }
   }
 
   return null;
@@ -118,7 +124,7 @@ export const resumeService = {
   },
   /**
    * Post resume form data to generate resume details
-   * Endpoint: POST https://skillcart-ai.fastapicloud.dev/api/v1/resume/generate
+   * Endpoint: POST https://skillcart-ai.onrender.com/api/v1/resume/generate
    * @param {Object} payload - Candidate resume data
    * @returns {Promise<Object>} API response details containing data.download_url
    */
@@ -190,7 +196,6 @@ export const resumeService = {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("resume", file);
 
     const headers = {
       ...(validToken ? { Authorization: `Bearer ${token}` } : {}),
@@ -199,7 +204,7 @@ export const resumeService = {
     let response;
     let errorDetail = "";
 
-    // 1. Direct attempt to http://10.111.57.115:8000/api/v1/resume/upload
+    // 1. Attempt primary backend endpoint (https://skillcart-resume.onrender.com/api/v1/resume/upload)
     try {
       response = await fetch(`${RESUME_BASE_URL}/api/v1/resume/upload`, {
         method: "POST",
@@ -210,26 +215,48 @@ export const resumeService = {
       errorDetail = err.message;
     }
 
-    // 2. Fallback attempt via local Vite proxy if CORS / network error occurred
+    // 2. Attempt Vite proxy if primary fetch thrown network exception
     if (!response) {
       try {
-        response = await fetch(`${PROXY_RESUME_URL}/api/v1/resume/upload`, {
+        const proxyResp = await fetch(`${PROXY_RESUME_URL}/api/v1/resume/upload`, {
           method: "POST",
           headers,
           body: formData,
         });
+        if (proxyResp.ok) {
+          response = proxyResp;
+        }
       } catch (err) {
-        throw new Error(`Upload failed to connect to ${RESUME_BASE_URL}: ${err.message || errorDetail}`, { cause: err });
+        // Ignore proxy connection error
       }
     }
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+    // 3. Fallback to active AI backend (https://skillcart-ai.onrender.com/api/v1/resume/analyze)
+    // if primary endpoint returned status 500/403/etc or failed to connect
+    if (!response || !response.ok) {
+      try {
+        const aiFormData = new FormData();
+        aiFormData.append("file", file);
+        const aiResp = await fetch(`${GENERATE_RESUME_BASE_URL}/api/v1/resume/analyze`, {
+          method: "POST",
+          headers,
+          body: aiFormData,
+        });
+        if (aiResp.ok) {
+          response = aiResp;
+        }
+      } catch (err) {
+        // Ignore AI backend fallback error if it also failed
+      }
+    }
+
+    if (!response || !response.ok) {
+      const errorData = response ? await response.json().catch(() => ({})) : {};
       throw new Error(
         errorData.message ||
         errorData.error ||
         errorData.detail ||
-        `Backend resume upload failed with status ${response.status}`
+        `Backend resume upload failed with status ${response?.status || 500}`
       );
     }
 

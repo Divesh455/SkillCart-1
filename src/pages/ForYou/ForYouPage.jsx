@@ -103,8 +103,14 @@ export default function ForYouPage() {
   // SAVED JOBS
   // ==========================================================
 
-  const [savedJobs, setSavedJobs] =
-    useState([]);
+  const [savedJobs, setSavedJobs] = useState(() => {
+    try {
+      const saved = localStorage.getItem("skillcart_saved_jobs");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const [isSavedJobsLoading, setIsSavedJobsLoading] =
     useState(false);
@@ -146,7 +152,9 @@ export default function ForYouPage() {
       location.search.includes(
         "view=saved"
       ) ||
-      location.hash === "#saved"
+      location.hash === "#saved" ||
+      location.pathname === "/saved" ||
+      location.pathname === "/saved-jobs"
     ) {
       setShowSaved(true);
     } else {
@@ -187,6 +195,10 @@ export default function ForYouPage() {
     []
   );
 
+  useEffect(() => {
+    fetchSavedJobs();
+  }, [fetchSavedJobs, showSaved]);
+
   // ==========================================================
   // FETCH AI RECOMMENDATIONS
   // ==========================================================
@@ -210,7 +222,7 @@ export default function ForYouPage() {
           // and calls:
           //
           // POST
-          // https://skillcart-ai.fastapicloud.dev
+          // https://skillcart-ai.onrender.com
           // api/v1/career/match
           // --------------------------------------------------
 
@@ -348,59 +360,46 @@ export default function ForYouPage() {
   // SWIPE
   // ==========================================================
 
-  const handleSwipe = (
-    direction
-  ) => {
-    if (
-      currentIndex >=
-      jobs.length
-    ) {
+  const handleSwipe = (direction) => {
+    if (currentIndex >= jobs.length) {
       return;
     }
 
-    const currentJob =
-      jobs[currentIndex];
+    const currentJob = jobs[currentIndex];
 
-    if (
-      direction === "right" &&
-      currentJob
-    ) {
+    // Right Swipe = Save Job via API
+    if (direction === "right" && currentJob) {
       const currentId = getJobId(currentJob);
-      if (currentId !== undefined && currentId !== null) {
-        saveJobService.saveJob(currentId).catch((err) => {
-          console.error("Failed to save job on backend:", err);
+      if (currentId !== undefined && currentId !== null && currentId !== "") {
+        // Call saveJob API asynchronously with silent catch block
+        saveJobService.saveJob(currentId, currentJob).catch((err) => {
+          console.error("Failed to save job on backend right swipe:", err);
         });
-      }
 
-      setSavedJobs(
-        (previousJobs) => {
-          const alreadySaved =
-            previousJobs.some(
-              (savedJob) =>
-                String(
-                  getJobId(
-                    savedJob
-                  )
-                ) ===
-                String(
-                  currentId
-                )
-            );
+        // Update local saved jobs state & cache
+        setSavedJobs((previousJobs) => {
+          const alreadySaved = previousJobs.some(
+            (savedJob) => String(getJobId(savedJob)) === String(currentId)
+          );
 
-          if (
-            alreadySaved
-          ) {
+          if (alreadySaved) {
             return previousJobs;
           }
 
-          return [
-            ...previousJobs,
-            currentJob,
-          ];
-        }
-      );
+          const updated = [...previousJobs, currentJob];
+          try {
+            localStorage.setItem(
+              "skillcart_saved_jobs",
+              JSON.stringify(updated)
+            );
+          } catch (e) {}
+          return updated;
+        });
+      }
     }
+    // Left Swipe = Dismiss/Ignore (No save API call)
 
+    // Remove/pop card from current viewing stack by advancing index
     setCurrentIndex((previousIndex) => {
       const nextIndex = previousIndex + 1;
       if (jobs.length > 0 && nextIndex >= jobs.length) {
@@ -439,18 +438,25 @@ export default function ForYouPage() {
 
       try {
         if (isAlreadySaved) {
-          await saveJobService.unsaveJob(jobId);
-          setSavedJobs((previousJobs) =>
-            previousJobs.filter(
+          setSavedJobs((previousJobs) => {
+            const updated = previousJobs.filter(
               (job) => String(getJobId(job)) !== String(jobId)
-            )
-          );
+            );
+            try {
+              localStorage.setItem("skillcart_saved_jobs", JSON.stringify(updated));
+            } catch (e) {}
+            return updated;
+          });
+          saveJobService.unsaveJob(jobId).catch((err) => console.warn("Backend unsaveJob:", err));
         } else {
-          await saveJobService.saveJob(jobId);
-          setSavedJobs((previousJobs) => [
-            ...previousJobs,
-            jobToToggle,
-          ]);
+          setSavedJobs((previousJobs) => {
+            const updated = [...previousJobs, jobToToggle];
+            try {
+              localStorage.setItem("skillcart_saved_jobs", JSON.stringify(updated));
+            } catch (e) {}
+            return updated;
+          });
+          saveJobService.saveJob(jobId, jobToToggle).catch((err) => console.warn("Backend saveJob:", err));
         }
       } catch (err) {
         console.error("Failed to toggle save job:", err);

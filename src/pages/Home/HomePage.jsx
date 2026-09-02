@@ -20,6 +20,7 @@ import Feed from "../../components/common/Feed";
 import JobDetailModal from "../ForYou/JobDetailModal";
 import CreatePostModal from "../../components/common/CreatePostModal";
 import Copilot from "../../components/common/Copilot";
+import ResumeAnalysisSection from "../../components/common/ResumeAnalysisSection";
 import PostCard from "../../components/common/PostCard";
 
 import socialService from "../../services/socialService";
@@ -459,8 +460,14 @@ export default function HomePage() {
   const [selectedJob, setSelectedJob] =
     useState(null);
 
-  const [savedJobs, setSavedJobs] =
-    useState([]);
+  const [savedJobs, setSavedJobs] = useState(() => {
+    try {
+      const saved = localStorage.getItem("skillcart_saved_jobs");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     const fetchSaved = async () => {
@@ -1407,6 +1414,11 @@ export default function HomePage() {
               </button>
 
             </motion.div>
+
+            {/* ==================================================
+                RESUME ANALYSIS SECTION
+            ================================================== */}
+            <ResumeAnalysisSection />
 
           </motion.aside>
 
@@ -2437,16 +2449,26 @@ export default function HomePage() {
 
               try {
                 if (isAlreadySaved) {
-                  await saveJobService.unsaveJob(jobId);
-                  setSavedJobs((previousJobs) =>
-                    previousJobs.filter(
+                  setSavedJobs((previousJobs) => {
+                    const updated = previousJobs.filter(
                       (savedJob) =>
                         String(savedJob.id ?? savedJob._id ?? savedJob.job_id) !== String(jobId)
-                    )
-                  );
+                    );
+                    try {
+                      localStorage.setItem("skillcart_saved_jobs", JSON.stringify(updated));
+                    } catch (e) {}
+                    return updated;
+                  });
+                  saveJobService.unsaveJob(jobId).catch((err) => console.warn("HomePage unsaveJob:", err));
                 } else {
-                  await saveJobService.saveJob(jobId);
-                  setSavedJobs((previousJobs) => [...previousJobs, jobToSave]);
+                  setSavedJobs((previousJobs) => {
+                    const updated = [...previousJobs, jobToSave];
+                    try {
+                      localStorage.setItem("skillcart_saved_jobs", JSON.stringify(updated));
+                    } catch (e) {}
+                    return updated;
+                  });
+                  saveJobService.saveJob(jobId, jobToSave).catch((err) => console.warn("HomePage saveJob:", err));
                 }
               } catch (err) {
                 console.error("Failed to toggle save on HomePage:", err);

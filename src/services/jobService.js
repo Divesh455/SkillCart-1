@@ -5,7 +5,7 @@ const JOBS_API_URL =
   "https://skillcartcompany-4b97f884.fastapicloud.dev";
 
 const AI_API_URL =
-  "https://skillcart-ai.fastapicloud.dev";
+  "https://skillcart-ai.onrender.com";
 
 async function fetchWithTimeout(
   url,
@@ -128,7 +128,7 @@ export const jobService = {
     }
 
     const response = await fetch(
-      "https://skillcart-ai.fastapicloud.dev/api/v1/resume/evaluate",
+      "https://skillcart-ai.onrender.com/api/v1/resume/evaluate",
       {
         method: "POST",
 

@@ -54,15 +54,23 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const savedUser =
       localStorage.getItem("user");
+    const savedRid =
+      localStorage.getItem("res_id") ||
+      localStorage.getItem("resume_id") ||
+      null;
 
     if (!savedUser) {
-      return null;
+      return savedRid ? { resumeId: savedRid } : null;
     }
 
     try {
-      return JSON.parse(savedUser);
+      const parsed = JSON.parse(savedUser);
+      if (parsed && !parsed.resumeId && savedRid) {
+        parsed.resumeId = savedRid;
+      }
+      return parsed;
     } catch {
-      return null;
+      return savedRid ? { resumeId: savedRid } : null;
     }
   });
 
@@ -204,13 +212,29 @@ export function AuthProvider({ children }) {
           ) === "true"
         );
 
+      const userWithResumeId = authenticatedUser
+        ? {
+            ...authenticatedUser,
+            resumeId:
+              authenticatedUser.resumeId ||
+              authenticatedUser.resume_id ||
+              authenticatedUser.res_id ||
+              authenticatedUser.Rid ||
+              authenticatedUser.rid ||
+              resumeIdFromLogin ||
+              null,
+          }
+        : (resumeIdFromLogin
+            ? { resumeId: resumeIdFromLogin }
+            : null);
+
       // ========================================================
       // SAVE TO REACT STATE
       // ========================================================
 
       setToken(authToken);
 
-      setUser(authenticatedUser);
+      setUser(userWithResumeId);
 
       setIsAuthenticated(true);
 
@@ -233,12 +257,12 @@ export function AuthProvider({ children }) {
       // SAVE USER
       // ========================================================
 
-      if (authenticatedUser) {
+      if (userWithResumeId) {
 
         localStorage.setItem(
           "user",
           JSON.stringify(
-            authenticatedUser
+            userWithResumeId
           )
         );
 
@@ -312,11 +336,14 @@ export function AuthProvider({ children }) {
 
         token: authToken,
 
-        user: authenticatedUser,
+        user: userWithResumeId,
 
         isNewUser: userIsNew,
 
         res_id:
+          resumeIdFromLogin,
+
+        resumeId:
           resumeIdFromLogin,
       };
 
@@ -344,7 +371,26 @@ export function AuthProvider({ children }) {
           userData
         );
 
-      return data;
+      const extractedRid =
+        extractRidFromResponse(data) ||
+        data?.resumeId ||
+        data?.resume_id ||
+        data?.res_id ||
+        data?.Rid ||
+        data?.rid ||
+        null;
+
+      if (extractedRid) {
+        setResumeId(String(extractedRid));
+        localStorage.setItem("res_id", String(extractedRid));
+        localStorage.setItem("resume_id", String(extractedRid));
+      }
+
+      return {
+        ...data,
+        resumeId: extractedRid || data?.resumeId || null,
+        res_id: extractedRid || data?.res_id || null,
+      };
 
     } finally {
 
@@ -453,6 +499,31 @@ export function AuthProvider({ children }) {
   // PROVIDER
   // ============================================================
 
+  const updateResumeId = (newId) => {
+    if (!newId || newId === "null" || newId === "undefined") {
+      setResumeId(null);
+      localStorage.removeItem("res_id");
+      localStorage.removeItem("resume_id");
+      setUser((prevUser) => {
+        if (!prevUser) return null;
+        const updated = { ...prevUser, resumeId: null };
+        localStorage.setItem("user", JSON.stringify(updated));
+        return updated;
+      });
+      return;
+    }
+
+    const strId = String(newId);
+    setResumeId(strId);
+    localStorage.setItem("res_id", strId);
+    localStorage.setItem("resume_id", strId);
+    setUser((prevUser) => {
+      const updated = prevUser ? { ...prevUser, resumeId: strId } : { resumeId: strId };
+      localStorage.setItem("user", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -475,7 +546,8 @@ export function AuthProvider({ children }) {
 
         setUser,
 
-        setResumeId,
+        setResumeId: updateResumeId,
+        updateResumeId,
       }}
     >
       {children}

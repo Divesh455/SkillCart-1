@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext";
  * Uncomment the logic block below to re-enable strict route authentication.
  */
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, isNewUser } = useAuth();
+  const { isAuthenticated, user, resumeId } = useAuth();
   const location = useLocation();
 
   // 1. Unauthenticated check
@@ -16,13 +16,31 @@ export default function ProtectedRoute({ children }) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  // 2. First-time registered user MUST go to Resume Page
-  if (isNewUser && location.pathname !== "/resume") {
+  // Check valid resumeId from user object, context state, or localStorage
+  const currentResumeId =
+    user?.resumeId ||
+    user?.resume_id ||
+    user?.res_id ||
+    user?.Rid ||
+    user?.rid ||
+    resumeId ||
+    localStorage.getItem("res_id") ||
+    localStorage.getItem("resume_id");
+
+  const hasValidResumeId = Boolean(
+    currentResumeId &&
+    currentResumeId !== "null" &&
+    currentResumeId !== "undefined" &&
+    String(currentResumeId).trim() !== ""
+  );
+
+  // 2. Authenticated but NO valid resumeId -> force redirect to /resume if attempting to visit any other route
+  if (!hasValidResumeId && location.pathname !== "/resume") {
     return <Navigate to="/resume" replace />;
   }
 
-  // 3. User should NEVER manually access "/resume" after completion
-  if (!isNewUser && location.pathname === "/resume") {
+  // 3. Authenticated AND HAS a valid resumeId -> if visiting /resume, redirect to /home
+  if (hasValidResumeId && location.pathname === "/resume") {
     return <Navigate to="/home" replace />;
   }
 

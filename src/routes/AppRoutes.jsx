@@ -61,6 +61,22 @@ export default function AppRoutes() {
         }
       />
       <Route
+        path="/saved"
+        element={
+          <ProtectedRoute>
+            <ForYouPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/saved-jobs"
+        element={
+          <ProtectedRoute>
+            <ForYouPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/onboarding"
         element={
           <ProtectedRoute>

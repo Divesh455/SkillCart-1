@@ -1,5 +1,5 @@
 const COPILOT_BASE_URL =
-  "https://skillcart-ai.fastapicloud.dev";
+  "https://skillcart-ai.onrender.com";
 
 const copilotService = {
 
