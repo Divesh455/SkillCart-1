@@ -29,6 +29,7 @@ import resumeService, {
 } from "../../services/resumeService";
 import Logo from "../../components/ui/Logo";
 import Input from "../../components/ui/Input";
+import AppHeader from "../../components/common/AppHeader";
 
 // -----------------------------------------------------------------------------
 // Animation Variants
@@ -1349,37 +1350,11 @@ export default function ResumePage() {
   return (
     <div className="min-h-screen bg-[#f7faf8] text-[#12221d] font-sans selection:bg-[#dff8eb] selection:text-[#19714e] pb-24">
 
-      {/* --------------------------------------------------------------------- */}
       {/* NAVBAR */}
-      {/* --------------------------------------------------------------------- */}
+      <AppHeader />
 
-      <header className="sticky top-0 z-30 bg-[#f7faf8]/90 backdrop-blur-md border-b border-[#dfe7e2]">
-        <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between">
-          <Logo />
-
-          <div className="flex items-center gap-4">
-            <Link
-              to="/home"
-              className="text-xs font-semibold text-[#52615a] hover:text-[#19714e] transition-colors"
-            >
-              Dashboard
-            </Link>
-
-            <Link
-              to="/for-you"
-              className="text-xs font-semibold text-[#52615a] hover:text-[#19714e] transition-colors"
-            >
-              Jobs For You
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* --------------------------------------------------------------------- */}
       {/* MAIN */}
-      {/* --------------------------------------------------------------------- */}
-
-      <main className="max-w-7xl mx-auto px-5 sm:px-6 pt-8 sm:pt-10">
+      <main className="max-w-7xl mx-auto px-3.5 sm:px-6 pt-6 sm:pt-10">
 
         {/* ------------------------------------------------------------------- */}
         {/* TOP HEADER */}

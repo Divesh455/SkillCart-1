@@ -86,6 +86,56 @@ export default function AuthPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Helper to extract actual error reason
+  const getAuthErrorMessage = (err, isLoginMode) => {
+    if (!err) {
+      return isLoginMode
+        ? "Failed to log in. Please check your credentials."
+        : "Failed to register. Please check your details.";
+    }
+
+    // 1. Check data payload message/error/detail
+    const dataMsg =
+      err?.data?.message ||
+      err?.data?.error ||
+      err?.data?.detail ||
+      err?.data?.msg ||
+      err?.data?.description;
+
+    if (typeof dataMsg === "string" && dataMsg.trim()) {
+      const trimmed = dataMsg.trim();
+      if (!trimmed.toLowerCase().includes("failed to fetch")) {
+        return trimmed;
+      }
+    }
+
+    // 2. Check err.message
+    if (typeof err.message === "string" && err.message.trim()) {
+      const trimmed = err.message.trim();
+      if (
+        trimmed.toLowerCase().includes("failed to fetch") ||
+        trimmed.toLowerCase().includes("networkerror") ||
+        trimmed.toLowerCase().includes("load failed")
+      ) {
+        return "Unable to connect to the authentication server. Please check your internet connection or try again.";
+      }
+      return trimmed;
+    }
+
+    // 3. Fallback based on HTTP status code
+    if (err.status === 400) return "Invalid request. Please check your entered details.";
+    if (err.status === 401) return "Incorrect email or password. Please verify your credentials.";
+    if (err.status === 403) return "Access denied. Account may already exist or credentials invalid.";
+    if (err.status === 404) return "No account found with this email address.";
+    if (err.status === 409) return "An account with this email or username already exists.";
+    if (err.status === 422) return "Validation error. Please verify your email and password format.";
+    if (err.status >= 500) return "Authentication server encountered an issue. Please try again shortly.";
+
+    return isLoginMode
+      ? "Failed to log in. Please check your credentials."
+      : "Failed to register. Please try again.";
+  };
+
   // Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -156,19 +206,14 @@ export default function AuthPage() {
             setIsLogin(true);
             setApiSuccess("Account already exists. Please sign in with your credentials.");
           } else if (err.status === 409) {
-            setApiError("Email or username already exists.");
+            setApiError(getAuthErrorMessage(err, false) || "Email or username already exists.");
           } else {
             throw err;
           }
         }
       }
     } catch (err) {
-      setApiError(
-        err.message ||
-          (isLogin
-            ? "Failed to log in. Please check your credentials."
-            : "Failed to register. Please try again.")
-      );
+      setApiError(getAuthErrorMessage(err, isLogin));
     } finally {
       setIsSubmitting(false);
     }

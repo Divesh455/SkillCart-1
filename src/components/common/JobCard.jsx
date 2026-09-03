@@ -230,13 +230,13 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
         </div>
 
         {/* Action Buttons Row: Evaluate Fit | Prepare | Apply */}
-        <div className="flex items-center justify-between w-full gap-2 pt-1">
+        <div className="flex items-center justify-between w-full gap-1.5 sm:gap-2 pt-1">
 
           {/* 1. EVALUATE FIT */}
           <EvaluateFitButton
             job={job}
             resId={resId}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 h-11 px-2.5 sm:px-3.5 rounded-2xl bg-[#dff8eb] hover:bg-[#c9f2df] text-[#123c2c] text-xs sm:text-sm font-bold border border-[#19714e]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
+            className="flex-1 min-w-0 inline-flex items-center justify-center gap-1 sm:gap-1.5 h-10 sm:h-11 px-2 sm:px-3 rounded-xl sm:rounded-2xl bg-[#dff8eb] hover:bg-[#c9f2df] text-[#123c2c] text-[11px] sm:text-xs font-bold border border-[#19714e]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-2xs truncate"
             onStartEvaluate={() => {
               setIsEvaluationModalOpen(true);
               setIsEvaluating(true);
@@ -273,20 +273,24 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
             }}
             className="
               flex-1
+              min-w-0
               inline-flex
               items-center
               justify-center
-              gap-1.5
-              h-11
-              px-2.5
-              sm:px-3.5
-              rounded-2xl
+              gap-1
+              sm:gap-1.5
+              h-10
+              sm:h-11
+              px-2
+              sm:px-3
+              rounded-xl
+              sm:rounded-2xl
               bg-[#f7faf8]
               hover:bg-[#eaf5ef]
               text-[#123c2c]
               hover:text-[#19714e]
-              text-xs
-              sm:text-sm
+              text-[11px]
+              sm:text-xs
               font-bold
               border
               border-[#dfe7e2]
@@ -295,11 +299,12 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
               shadow-2xs
               hover:shadow-xs
               cursor-pointer
+              truncate
             "
             title="Prepare for this Interview with AI"
           >
-            <BrainCircuit size={15} className="text-[#19714e] shrink-0" />
-            <span>Prepare</span>
+            <BrainCircuit size={14} className="text-[#19714e] shrink-0" />
+            <span className="truncate">Prepare</span>
           </motion.button>
 
           {/* 3. APPLY */}
@@ -319,28 +324,33 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
             }}
             className="
               flex-1
+              min-w-0
               inline-flex
               items-center
               justify-center
-              gap-1.5
-              h-11
-              px-2.5
-              sm:px-3.5
-              rounded-2xl
+              gap-1
+              sm:gap-1.5
+              h-10
+              sm:h-11
+              px-2
+              sm:px-3
+              rounded-xl
+              sm:rounded-2xl
               bg-[#123c2c]
               hover:bg-[#19714e]
               text-white
-              text-xs
-              sm:text-sm
+              text-[11px]
+              sm:text-xs
               font-bold
               transition-all
               shadow-md
               shadow-[#123c2c]/15
               cursor-pointer
+              truncate
             "
           >
-            <span>Apply</span>
-            <ArrowUpRight size={14} className="shrink-0" />
+            <span className="truncate">Apply</span>
+            <ArrowUpRight size={13} className="shrink-0" />
           </motion.button>
 
         </div>
