@@ -1,13 +1,66 @@
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, Briefcase, Sparkles, BookmarkCheck, LogOut, User } from "lucide-react";
 import Logo from "../ui/Logo";
 import { useAuth } from "../../context/AuthContext";
+import UserProfileModal from "./UserProfileModal";
 
 export default function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Extract current user ID from storage / JWT fallback
+  const getCurrentUserId = () => {
+    try {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          const userObj = JSON.parse(savedUser);
+          const id = userObj?.id || userObj?.userId || userObj?._id;
+          if (id) return id;
+        } catch (e) {}
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token || typeof token !== "string" || !token.includes(".") || token === "null" || token === "undefined") {
+        return null;
+      }
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload?.userId || payload?.id || (payload?.sub && !isNaN(payload?.sub) ? payload?.sub : null) || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const getUsernameFromStorage = () => {
+    try {
+      const savedUser = localStorage.getItem("user");
+      if (savedUser) {
+        try {
+          const userObj = JSON.parse(savedUser);
+          const name = userObj?.username || userObj?.name;
+          if (name) return name;
+        } catch (e) {}
+      }
+
+      const token = localStorage.getItem("token");
+      if (!token || typeof token !== "string" || !token.includes(".") || token === "null" || token === "undefined") {
+        return "User";
+      }
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload?.username || payload?.name || payload?.sub || "User";
+    } catch {
+      return "User";
+    }
+  };
+
+  const currentUserId = user?.id || user?.userId || getCurrentUserId();
+  const currentUsername = user?.username || getUsernameFromStorage();
 
   const navItems = [
     { label: "HOME", path: "/home", icon: Home },
@@ -84,18 +137,19 @@ export default function AppHeader() {
           {/* Right: User Profile Controls & Logout */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <div className="flex items-center gap-1.5 sm:gap-2 pl-2 border-l border-[#dfe7e2]">
+              {/* Profile Information Trigger Button */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/resume")}
-                title="View Profile / Resume"
+                onClick={() => setIsProfileOpen(true)}
+                title="View Profile Information"
                 className="flex items-center gap-2 px-2 sm:px-2.5 py-1.5 rounded-2xl bg-[#f7faf8] hover:bg-[#dff8eb] border border-[#dfe7e2] cursor-pointer transition-all"
               >
                 <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#123c2c] to-[#19714e] text-[#b9ef84] flex items-center justify-center font-bold text-xs shadow-xs font-['Space_Grotesk'] shrink-0">
-                  {user?.username ? user.username.charAt(0).toUpperCase() : <User size={14} />}
+                  {currentUsername ? currentUsername.charAt(0).toUpperCase() : <User size={14} />}
                 </div>
                 <span className="hidden md:inline-block text-xs font-bold text-[#12221d]">
-                  {user?.username || "Account"}
+                  {currentUsername || "Account"}
                 </span>
               </motion.div>
 
@@ -148,6 +202,17 @@ export default function AppHeader() {
           );
         })}
       </nav>
+
+      {/* ── USER PROFILE INFORMATION MODAL ── */}
+      {isProfileOpen && (
+        <UserProfileModal
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          userId={currentUserId}
+          initialUser={{ username: currentUsername }}
+          initialTab="posts"
+        />
+      )}
     </>
   );
 }
