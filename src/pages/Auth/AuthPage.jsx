@@ -330,7 +330,7 @@ export default function AuthPage() {
             </AnimatePresence>
 
             {/* Active Resume ID Indicator */}
-            <AnimatePresence>
+            {/* <AnimatePresence>
               {resumeId && (
                 <motion.div
                   initial={{ opacity: 0, y: -4 }}
@@ -347,7 +347,7 @@ export default function AuthPage() {
                   </span>
                 </motion.div>
               )}
-            </AnimatePresence>
+            </AnimatePresence> */}
 
             {/* Form */}
             <form onSubmit={handleSubmit} noValidate className="space-y-4">

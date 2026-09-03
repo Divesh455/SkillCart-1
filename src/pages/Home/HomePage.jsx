@@ -39,6 +39,9 @@ export default function HomePage() {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] =
     useState(true);
+  const [currentIndex, setCurrentIndex] =
+    useState(0);
+  const USERS_PER_PAGE = 5;
 
   // ============================================================
   // FOLLOW STATE
@@ -673,15 +676,16 @@ export default function HomePage() {
       : [];
 
   // ============================================================
-  // OTHER USERS
+  // OTHER USERS / PEOPLE TO FOLLOW
   // ============================================================
 
-  const otherUsers =
+  const usersToFollow =
     users.filter(
       (person) =>
         person.id !==
         currentUserId
     );
+  const otherUsers = usersToFollow;
 
   // ============================================================
   // RENDER
@@ -1699,7 +1703,7 @@ export default function HomePage() {
               {/* NO USERS */}
 
               {!loadingUsers &&
-                otherUsers.length ===
+                usersToFollow.length ===
                   0 && (
 
                   <div
@@ -1719,8 +1723,11 @@ export default function HomePage() {
               {/* USERS */}
 
               {!loadingUsers &&
-                otherUsers
-                  .slice(0, 5)
+                usersToFollow
+                  .slice(
+                    currentIndex,
+                    currentIndex + USERS_PER_PAGE
+                  )
                   .map((person) => {
 
                     const personName =
@@ -1869,6 +1876,50 @@ export default function HomePage() {
 
                     );
                   })}
+
+
+              {/* NEXT BUTTON */}
+
+              {!loadingUsers &&
+                usersToFollow.length >
+                  0 && (
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (
+                        currentIndex +
+                          USERS_PER_PAGE <
+                        usersToFollow.length
+                      ) {
+                        setCurrentIndex(
+                          currentIndex +
+                            USERS_PER_PAGE
+                        );
+                      } else {
+                        setCurrentIndex(0);
+                      }
+                    }}
+                    className="
+                      w-full
+                      py-2
+                      px-3
+                      rounded-xl
+                      text-xs
+                      font-bold
+                      text-[#19714e]
+                      bg-[#dff8eb]/60
+                      hover:bg-[#dff8eb]
+                      border
+                      border-[#19714e]/20
+                      transition-all
+                      text-center
+                    "
+                  >
+                    Next
+                  </button>
+
+                )}
 
             </div>
 
