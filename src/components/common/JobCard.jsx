@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -10,10 +11,12 @@ import {
   ArrowUpRight,
   Sparkles,
   Zap,
+  BrainCircuit,
 } from "lucide-react";
 
 import EvaluateFitButton from "./EvaluateFitButton";
 import JobEvaluationModal from "./JobEvaluationModal";
+import PrepareCategoryModal from "./PrepareCategoryModal";
 /**
  * Helper to generate deterministic gradient background based on company name
  */
@@ -44,6 +47,7 @@ function getWorkModeBadge(mode = "On-site") {
 }
 
 export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, saving = false, }) {
+  const navigate = useNavigate();
   const saved = isSaved ?? false;
 
   // Helper to format currency salary cleanly
@@ -95,6 +99,17 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluationError, setEvaluationError] = useState(null);
   const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+
+  const handleSelectCategory = (category) => {
+    setIsCategoryModalOpen(false);
+    const jobId = job?.id ?? job?.job_id ?? job?._id;
+    if (jobId) {
+      navigate(`/interview/prepare/${jobId}?category=${encodeURIComponent(category)}`, {
+        state: { job, resId, category },
+      });
+    }
+  };
 
   return (
     <>
@@ -214,12 +229,14 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
 
         </div>
 
-        <div className="flex items-center justify-between w-full gap-2">
+        {/* Action Buttons Row: Evaluate Fit | Prepare | Apply */}
+        <div className="flex items-center justify-between w-full gap-2 pt-1">
 
-          {/* EVALUATE FIT */}
+          {/* 1. EVALUATE FIT */}
           <EvaluateFitButton
             job={job}
             resId={resId}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 h-11 px-2.5 sm:px-3.5 rounded-2xl bg-[#dff8eb] hover:bg-[#c9f2df] text-[#123c2c] text-xs sm:text-sm font-bold border border-[#19714e]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
             onStartEvaluate={() => {
               setIsEvaluationModalOpen(true);
               setIsEvaluating(true);
@@ -236,11 +253,60 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
             }}
           />
 
-          {/* APPLY */}
+          {/* 2. PREPARE (Interview Preparation) */}
           <motion.button
             type="button"
             whileHover={{
-              scale: 1.06,
+              scale: 1.04,
+            }}
+            whileTap={{
+              scale: 0.94,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              const jobId = job?.id ?? job?.job_id ?? job?._id;
+              if (jobId) {
+                setIsCategoryModalOpen(true);
+              } else {
+                alert("Job ID not available for interview preparation.");
+              }
+            }}
+            className="
+              flex-1
+              inline-flex
+              items-center
+              justify-center
+              gap-1.5
+              h-11
+              px-2.5
+              sm:px-3.5
+              rounded-2xl
+              bg-[#f7faf8]
+              hover:bg-[#eaf5ef]
+              text-[#123c2c]
+              hover:text-[#19714e]
+              text-xs
+              sm:text-sm
+              font-bold
+              border
+              border-[#dfe7e2]
+              hover:border-[#19714e]/40
+              transition-all
+              shadow-2xs
+              hover:shadow-xs
+              cursor-pointer
+            "
+            title="Prepare for this Interview with AI"
+          >
+            <BrainCircuit size={15} className="text-[#19714e] shrink-0" />
+            <span>Prepare</span>
+          </motion.button>
+
+          {/* 3. APPLY */}
+          <motion.button
+            type="button"
+            whileHover={{
+              scale: 1.04,
             }}
             whileTap={{
               scale: 0.94,
@@ -252,25 +318,29 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
               }
             }}
             className="
+              flex-1
               inline-flex
               items-center
               justify-center
               gap-1.5
-              h-12
-              px-5
+              h-11
+              px-2.5
+              sm:px-3.5
               rounded-2xl
               bg-[#123c2c]
               hover:bg-[#19714e]
               text-white
-              text-sm
-              font-semibold
+              text-xs
+              sm:text-sm
+              font-bold
               transition-all
               shadow-md
               shadow-[#123c2c]/15
+              cursor-pointer
             "
           >
             <span>Apply</span>
-            <ArrowUpRight size={15} />
+            <ArrowUpRight size={14} className="shrink-0" />
           </motion.button>
 
         </div>
@@ -292,6 +362,15 @@ export default function JobCard({ job, resId, onClick, isSaved, onToggleSave, sa
           }}
         />
       )}
+
+      {/* PREPARE CATEGORY SELECTION MODAL */}
+      <PrepareCategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        job={job}
+        onSelectCategory={handleSelectCategory}
+      />
     </>
   );
 }
+

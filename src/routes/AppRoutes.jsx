@@ -5,6 +5,7 @@ import HomePage from "../pages/Home/HomePage";
 import JobsPage from "../pages/Jobs/JobsPage";
 import ForYouPage from "../pages/ForYou/ForYouPage";
 import ResumePage from "../pages/Resume/ResumePage";
+import InterviewPreparePage from "../pages/Interview/InterviewPreparePage";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
@@ -41,6 +42,22 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <JobsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/interview/prepare/:jobId"
+        element={
+          <ProtectedRoute>
+            <InterviewPreparePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/interview/prepare"
+        element={
+          <ProtectedRoute>
+            <InterviewPreparePage />
           </ProtectedRoute>
         }
       />
