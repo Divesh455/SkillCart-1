@@ -242,51 +242,16 @@ export default function HomePage() {
         return;
       }
 
-      const currentlyFollowing =
-        followingUsers[userId] === true;
+      const nextFollowingState = !currentlyFollowing;
 
       try {
-
-        setFollowLoading(
-          (previous) => ({
-            ...previous,
-            [userId]: true,
-          })
-        );
+        setFollowLoading((previous) => ({ ...previous, [userId]: true }));
+        setFollowingUsers((previous) => ({ ...previous, [userId]: nextFollowingState }));
 
         if (currentlyFollowing) {
-
-          // ----------------------------------------------------
-          // UNFOLLOW
-          // ----------------------------------------------------
-
-          await socialService.unfollowUser(
-            userId
-          );
-
-          setFollowingUsers(
-            (previous) => ({
-              ...previous,
-              [userId]: false,
-            })
-          );
-
+          await socialService.unfollowUser(userId);
         } else {
-
-          // ----------------------------------------------------
-          // FOLLOW
-          // ----------------------------------------------------
-
-          await socialService.followUser(
-            userId
-          );
-
-          setFollowingUsers(
-            (previous) => ({
-              ...previous,
-              [userId]: true,
-            })
-          );
+          await socialService.followUser(userId);
         }
 
       } catch (error) {
@@ -900,8 +865,10 @@ export default function HomePage() {
 
                 {/* QUICK STATS ROW */}
                 <div className="mt-3.5 grid grid-cols-3 gap-2 text-center p-2 bg-[#f7faf8] rounded-2xl border border-[#dfe7e2]">
-                  <div
-                    className="cursor-pointer hover:bg-white p-1 rounded-xl transition-colors"
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="cursor-pointer hover:bg-white p-1 rounded-xl transition-all shadow-2xs select-none"
                     onClick={() => {
                       setProfileInitialTab("posts");
                       setShowProfile(true);
@@ -913,9 +880,11 @@ export default function HomePage() {
                       <p className="text-xs font-extrabold text-[#123c2c]">{userStats.postsCount}</p>
                     )}
                     <p className="text-[9px] font-semibold text-[#68756f] uppercase">Posts</p>
-                  </div>
-                  <div
-                    className="cursor-pointer hover:bg-white p-1 rounded-xl transition-colors"
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="cursor-pointer hover:bg-white p-1 rounded-xl transition-all shadow-2xs select-none"
                     onClick={() => {
                       setProfileInitialTab("followers");
                       setShowProfile(true);
@@ -927,9 +896,11 @@ export default function HomePage() {
                       <p className="text-xs font-extrabold text-[#123c2c]">{userStats.followersCount}</p>
                     )}
                     <p className="text-[9px] font-semibold text-[#68756f] uppercase">Followers</p>
-                  </div>
-                  <div
-                    className="cursor-pointer hover:bg-white p-1 rounded-xl transition-colors"
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="cursor-pointer hover:bg-white p-1 rounded-xl transition-all shadow-2xs select-none"
                     onClick={() => {
                       setProfileInitialTab("following");
                       setShowProfile(true);
@@ -941,7 +912,7 @@ export default function HomePage() {
                       <p className="text-xs font-extrabold text-[#123c2c]">{userStats.followingCount}</p>
                     )}
                     <p className="text-[9px] font-semibold text-[#68756f] uppercase">Following</p>
-                  </div>
+                  </motion.div>
                 </div>
 
 
@@ -1394,8 +1365,10 @@ export default function HomePage() {
 
               {/* OPEN COPILOT */}
 
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() =>
                   setIsCopilotOpen(true)
                 }
@@ -1415,9 +1388,10 @@ export default function HomePage() {
                   items-center
                   justify-center
                   gap-2
-                  transition-all
+                  transition-colors
                   shadow-sm
                   hover:shadow-md
+                  cursor-pointer
                 "
               >
 
@@ -1432,7 +1406,7 @@ export default function HomePage() {
                   size={15}
                 />
 
-              </button>
+              </motion.button>
 
             </motion.div>
 
@@ -1471,6 +1445,8 @@ export default function HomePage() {
                 opacity: 1,
                 y: 0,
               }}
+              whileHover={{ scale: 1.01, y: -2 }}
+              whileTap={{ scale: 0.99 }}
               onClick={() =>
                 setIsCreatePostOpen(
                   true
@@ -1488,6 +1464,7 @@ export default function HomePage() {
                 hover:border-[#19714e]/50
                 cursor-pointer
                 transition-all
+                duration-200
                 flex
                 items-center
                 justify-between
@@ -1764,8 +1741,12 @@ export default function HomePage() {
 
                     return (
 
-                      <div
+                      <motion.div
                         key={person.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ y: -1.5, scale: 1.01 }}
+                        transition={{ duration: 0.2 }}
                         className="
                           flex
                           items-center
@@ -1774,6 +1755,10 @@ export default function HomePage() {
                           p-2.5
                           rounded-2xl
                           bg-[#f7faf8]
+                          hover:bg-white
+                          hover:border-[#19714e]/30
+                          hover:shadow-2xs
+                          transition-all
                           border
                           border-[#dfe7e2]
                         "
@@ -1866,26 +1851,24 @@ export default function HomePage() {
 
                         {/* FOLLOW BUTTON */}
 
-                        <button
+                        <motion.button
                           type="button"
-                          disabled={
-                            isLoading
-                          }
+                          whileTap={{ scale: 0.92 }}
+                          whileHover={{ scale: 1.04 }}
                           onClick={() =>
                             handleFollowToggle(
                               person.id
                             )
                           }
                           className={`
-                            shrink-0
                             px-3
                             py-1.5
                             rounded-xl
-                            text-[10px]
+                            text-[11px]
                             font-bold
                             transition-all
-                            disabled:opacity-50
-                            disabled:cursor-not-allowed
+                            shrink-0
+                            cursor-pointer
 
                             ${
                               isFollowing
@@ -1894,16 +1877,20 @@ export default function HomePage() {
                             }
                           `}
                         >
+                          <motion.span
+                            key={isFollowing ? "following" : "follow"}
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.18 }}
+                            className="inline-block"
+                          >
+                            {isFollowing
+                              ? "Following"
+                              : "Follow"}
+                          </motion.span>
+                        </motion.button>
 
-                          {isLoading
-                            ? "..."
-                            : isFollowing
-                            ? "Following"
-                            : "Follow"}
-
-                        </button>
-
-                      </div>
+                      </motion.div>
 
                     );
                   })}

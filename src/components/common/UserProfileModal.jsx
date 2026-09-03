@@ -542,7 +542,10 @@ export default function UserProfileModal({
     <AnimatePresence>
       <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         {/* BACKDROP CLICK */}
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           className="fixed inset-0"
           onClick={onClose}
           aria-label="Close modal overlay"
@@ -550,10 +553,10 @@ export default function UserProfileModal({
 
         {/* MODAL CARD */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.94, y: 15 }}
+          initial={{ opacity: 0, scale: 0.92, y: 18 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.94, y: 15 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
+          exit={{ opacity: 0, scale: 0.92, y: 18 }}
+          transition={{ type: "spring", damping: 25, stiffness: 320 }}
           onClick={(e) => e.stopPropagation()}
           className="bg-white border border-[#dfe7e2] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative z-10 scrollbar-thin flex flex-col"
         >
@@ -565,26 +568,30 @@ export default function UserProfileModal({
 
             {/* Back Navigation if viewing nested profile */}
             {userHistory.length > 0 && (
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.92 }}
                 onClick={handleGoBackUser}
-                className="absolute top-4 left-4 h-9 px-3 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-md z-20 text-xs font-bold"
+                className="absolute top-4 left-4 h-9 px-3.5 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center gap-1.5 transition-colors cursor-pointer shadow-md z-20 text-xs font-bold"
                 title="Back to previous profile"
               >
                 <ArrowLeft size={16} />
                 <span>Back</span>
-              </button>
+              </motion.button>
             )}
 
             {/* Close Button */}
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-all cursor-pointer shadow-md z-20"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white flex items-center justify-center transition-colors cursor-pointer shadow-md z-20"
               title="Close profile"
             >
               <X size={18} />
-            </button>
+            </motion.button>
           </div>
 
           {/* ==================================================
@@ -593,12 +600,16 @@ export default function UserProfileModal({
           <div className="px-5 sm:px-7 pb-6 relative flex-1">
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 sm:-mt-14 mb-5">
               {/* AVATAR */}
-              <div className="relative">
+              <motion.div
+                whileHover={{ scale: 1.04 }}
+                transition={{ duration: 0.2 }}
+                className="relative"
+              >
                 <div className="w-22 h-22 sm:w-26 sm:h-26 rounded-3xl bg-gradient-to-br from-[#123c2c] to-[#19714e] text-[#b9ef84] border-4 border-white font-bold text-3xl sm:text-4xl flex items-center justify-center shadow-xl font-['Space_Grotesk'] shrink-0 select-none">
                   {avatarLetter}
                 </div>
                 <div className="absolute -inset-0.5 rounded-3xl bg-[#b9ef84]/20 -z-10 blur-sm" />
-              </div>
+              </motion.div>
 
               {/* ACTION BUTTONS (FOLLOW / FOLLOWING) */}
               <div className="flex items-center gap-2.5 sm:mb-1">
@@ -608,12 +619,13 @@ export default function UserProfileModal({
                     Your Profile
                   </span>
                 ) : (
-                  <button
+                  <motion.button
                     type="button"
-                    disabled={loading || followLoading}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.94 }}
                     onClick={handleFollowToggle}
                     className={`
-                      px-5 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
+                      px-5 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer
                       ${
                         profile?.followingByMe
                           ? "border border-[#19714e] text-[#19714e] bg-[#f0f8f4] hover:bg-red-50 hover:text-red-600 hover:border-red-200"
@@ -621,20 +633,26 @@ export default function UserProfileModal({
                       }
                     `}
                   >
-                    {followLoading ? (
-                      <Loader2 size={15} className="animate-spin" />
-                    ) : profile?.followingByMe ? (
-                      <>
-                        <UserCheck size={15} />
-                        <span>Following</span>
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus size={15} />
-                        <span>Follow</span>
-                      </>
-                    )}
-                  </button>
+                    <motion.span
+                      key={profile?.followingByMe ? "following" : "follow"}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                      className="inline-flex items-center gap-2"
+                    >
+                      {profile?.followingByMe ? (
+                        <>
+                          <UserCheck size={15} />
+                          <span>Following</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus size={15} />
+                          <span>Follow</span>
+                        </>
+                      )}
+                    </motion.span>
+                  </motion.button>
                 )}
               </div>
             </div>
@@ -662,7 +680,9 @@ export default function UserProfileModal({
                 {(linkedinUrl || githubUrl || portfolioUrl) && (
                   <div className="flex flex-wrap items-center gap-2 pt-0.5">
                     {linkedinUrl && (
-                      <a
+                      <motion.a
+                        whileHover={{ scale: 1.05, y: -1 }}
+                        whileTap={{ scale: 0.95 }}
                         href={linkedinUrl}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -671,11 +691,13 @@ export default function UserProfileModal({
                         <FaLinkedin size={14} />
                         <span>LinkedIn</span>
                         <ExternalLink size={11} className="opacity-70 group-hover:opacity-100" />
-                      </a>
+                      </motion.a>
                     )}
 
                     {githubUrl && (
-                      <a
+                      <motion.a
+                        whileHover={{ scale: 1.05, y: -1 }}
+                        whileTap={{ scale: 0.95 }}
                         href={githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -684,11 +706,13 @@ export default function UserProfileModal({
                         <FaGithub size={14} />
                         <span>GitHub</span>
                         <ExternalLink size={11} className="opacity-70 group-hover:opacity-100" />
-                      </a>
+                      </motion.a>
                     )}
 
                     {portfolioUrl && (
-                      <a
+                      <motion.a
+                        whileHover={{ scale: 1.05, y: -1 }}
+                        whileTap={{ scale: 0.95 }}
                         href={portfolioUrl}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -697,7 +721,7 @@ export default function UserProfileModal({
                         <Globe size={14} />
                         <span>Portfolio</span>
                         <ExternalLink size={11} className="opacity-70 group-hover:opacity-100" />
-                      </a>
+                      </motion.a>
                     )}
                   </div>
                 )}
@@ -714,12 +738,14 @@ export default function UserProfileModal({
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {parsedSkills.map((skill, idx) => (
-                        <span
+                        <motion.span
                           key={`${skill}-${idx}`}
-                          className="text-[11px] font-semibold bg-white text-[#123c2c] border border-[#dfe7e2] px-2.5 py-1 rounded-xl shadow-2xs hover:border-[#19714e]/30 transition-colors"
+                          whileHover={{ scale: 1.06, y: -1 }}
+                          transition={{ duration: 0.15 }}
+                          className="text-[11px] font-semibold bg-white text-[#123c2c] border border-[#dfe7e2] px-2.5 py-1 rounded-xl shadow-2xs hover:border-[#19714e]/40 transition-colors select-none"
                         >
                           {skill}
-                        </span>
+                        </motion.span>
                       ))}
                     </div>
                   </div>
@@ -765,7 +791,9 @@ export default function UserProfileModal({
             ================================================== */}
             <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 my-5">
               {/* POSTS COUNT */}
-              <div
+              <motion.div
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setActiveTab("posts")}
                 className={`
                   p-3.5 sm:p-4 rounded-2xl border text-center transition-all cursor-pointer select-none
@@ -787,10 +815,12 @@ export default function UserProfileModal({
                   <FileText size={12} className="text-[#19714e]" />
                   Posts
                 </p>
-              </div>
+              </motion.div>
 
               {/* FOLLOWERS COUNT */}
-              <div
+              <motion.div
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => {
                   setActiveTab("followers");
                   loadFollowers();
@@ -815,10 +845,12 @@ export default function UserProfileModal({
                   <Users size={12} className="text-[#19714e]" />
                   Followers
                 </p>
-              </div>
+              </motion.div>
 
               {/* FOLLOWING COUNT */}
-              <div
+              <motion.div
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => {
                   setActiveTab("following");
                   loadFollowing();
@@ -843,13 +875,14 @@ export default function UserProfileModal({
                   <UserCheck size={12} className="text-[#19714e]" />
                   Following
                 </p>
-              </div>
+              </motion.div>
             </div>
 
             {/* TAB SELECTOR */}
             <div className="flex items-center gap-2 border-b border-[#dfe7e2] pb-3 mb-4 overflow-x-auto scrollbar-none">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.94 }}
                 onClick={() => setActiveTab("posts")}
                 className={`
                   flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0
@@ -867,10 +900,11 @@ export default function UserProfileModal({
                 }`}>
                   {posts.length}
                 </span>
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.94 }}
                 onClick={() => {
                   setActiveTab("followers");
                   loadFollowers();
@@ -891,10 +925,11 @@ export default function UserProfileModal({
                 }`}>
                   {profile?.followersCount ?? followers.length}
                 </span>
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.94 }}
                 onClick={() => {
                   setActiveTab("following");
                   loadFollowing();
@@ -915,7 +950,7 @@ export default function UserProfileModal({
                 }`}>
                   {profile?.followingCount ?? following.length}
                 </span>
-              </button>
+              </motion.button>
             </div>
 
             {/* ==================================================
@@ -1069,8 +1104,12 @@ export default function UserProfileModal({
                       const isSubLoading = subFollowLoading[fId] === true;
 
                       return (
-                        <div
+                        <motion.div
                           key={fId || Math.random()}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          whileHover={{ y: -1, scale: 1.008 }}
+                          transition={{ duration: 0.18 }}
                           className="
                             flex items-center justify-between gap-3 p-3 rounded-2xl bg-[#f7faf8] border border-[#dfe7e2] hover:bg-white hover:border-[#19714e]/30 transition-all shadow-2xs group
                           "
@@ -1098,12 +1137,13 @@ export default function UserProfileModal({
 
                           {/* Action Button (Follow / Following) */}
                           {!isMe && fId && (
-                            <button
+                            <motion.button
                               type="button"
-                              disabled={isSubLoading}
+                              whileTap={{ scale: 0.9 }}
+                              whileHover={{ scale: 1.04 }}
                               onClick={() => handleRowFollowToggle(fId)}
                               className={`
-                                shrink-0 px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition-all disabled:opacity-50 cursor-pointer
+                                shrink-0 px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer
                                 ${
                                   isFollowingThisPerson
                                     ? "bg-[#dff8eb] text-[#19714e] border border-[#19714e]/30 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
@@ -1111,19 +1151,25 @@ export default function UserProfileModal({
                                 }
                               `}
                             >
-                              {isSubLoading
-                                ? "..."
-                                : isFollowingThisPerson
-                                ? "Following"
-                                : "Follow"}
-                            </button>
+                              <motion.span
+                                key={isFollowingThisPerson ? "following" : "follow"}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ duration: 0.18 }}
+                                className="inline-block"
+                              >
+                                {isFollowingThisPerson
+                                  ? "Following"
+                                  : "Follow"}
+                              </motion.span>
+                            </motion.button>
                           )}
                           {isMe && (
                             <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-[#dff8eb] text-[#19714e]">
                               You
                             </span>
                           )}
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>
@@ -1205,8 +1251,12 @@ export default function UserProfileModal({
                       const isSubLoading = subFollowLoading[fId] === true;
 
                       return (
-                        <div
+                        <motion.div
                           key={fId || Math.random()}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          whileHover={{ y: -1, scale: 1.008 }}
+                          transition={{ duration: 0.18 }}
                           className="
                             flex items-center justify-between gap-3 p-3 rounded-2xl bg-[#f7faf8] border border-[#dfe7e2] hover:bg-white hover:border-[#19714e]/30 transition-all shadow-2xs group
                           "
@@ -1234,12 +1284,13 @@ export default function UserProfileModal({
 
                           {/* Action Button (Following / Follow) */}
                           {!isMe && fId && (
-                            <button
+                            <motion.button
                               type="button"
-                              disabled={isSubLoading}
+                              whileTap={{ scale: 0.9 }}
+                              whileHover={{ scale: 1.04 }}
                               onClick={() => handleRowFollowToggle(fId)}
                               className={`
-                                shrink-0 px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition-all disabled:opacity-50 cursor-pointer
+                                shrink-0 px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer
                                 ${
                                   isFollowingThisPerson
                                     ? "bg-[#dff8eb] text-[#19714e] border border-[#19714e]/30 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
@@ -1247,19 +1298,25 @@ export default function UserProfileModal({
                                 }
                               `}
                             >
-                              {isSubLoading
-                                ? "..."
-                                : isFollowingThisPerson
-                                ? "Following"
-                                : "Follow"}
-                            </button>
+                              <motion.span
+                                key={isFollowingThisPerson ? "following" : "follow"}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ duration: 0.18 }}
+                                className="inline-block"
+                              >
+                                {isFollowingThisPerson
+                                  ? "Following"
+                                  : "Follow"}
+                              </motion.span>
+                            </motion.button>
                           )}
                           {isMe && (
                             <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-[#dff8eb] text-[#19714e]">
                               You
                             </span>
                           )}
-                        </div>
+                        </motion.div>
                       );
                     })}
                   </div>

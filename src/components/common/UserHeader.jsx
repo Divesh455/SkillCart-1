@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { motion } from "framer-motion";
+import { UserCheck, UserPlus } from "lucide-react";
 
 export default function UserHeader({
   user,
@@ -130,18 +132,24 @@ export default function UserHeader({
       ===================================================== */}
 
       {showFollow && (
-        <button
+        <motion.button
           type="button"
           onClick={onFollow}
-          disabled={followLoading}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.03 }}
           className={`
-            px-4
-            py-2
+            px-3.5
+            py-1.5
             rounded-xl
             text-xs
             font-bold
             transition-all
             shrink-0
+            cursor-pointer
+            flex
+            items-center
+            gap-1.5
+            select-none
 
             ${
               isFollowing
@@ -150,27 +158,39 @@ export default function UserHeader({
                   border-[#19714e]
                   text-[#19714e]
                   bg-[#f0f8f4]
+                  hover:bg-red-50
+                  hover:text-red-600
+                  hover:border-red-200
                 `
                 : `
                   bg-[#123c2c]
                   text-white
                   hover:bg-[#19714e]
+                  hover:shadow-xs
                 `
-            }
-
-            ${
-              followLoading
-                ? "opacity-50 cursor-not-allowed"
-                : ""
             }
           `}
         >
-          {followLoading
-            ? "..."
-            : isFollowing
-              ? "Following"
-              : "Follow"}
-        </button>
+          <motion.span
+            key={isFollowing ? "following" : "follow"}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="inline-flex items-center gap-1.5"
+          >
+            {isFollowing ? (
+              <>
+                <UserCheck size={14} />
+                <span>Following</span>
+              </>
+            ) : (
+              <>
+                <UserPlus size={14} />
+                <span>Follow</span>
+              </>
+            )}
+          </motion.span>
+        </motion.button>
       )}
 
     </div>
