@@ -16,6 +16,7 @@ import {
 
 import socialService from "../../services/socialService";
 import UserHeader from "./UserHeader";
+import UserProfileModal from "./UserProfileModal";
 
 // ============================================================
 // GET CURRENT USER ID FROM JWT
@@ -92,7 +93,33 @@ export default function PostCard({
   const [postUser, setPostUser] =
     useState(null);
 
+  const [activeProfileUserId, setActiveProfileUserId] = useState(null);
+  const [activeProfileInitialUser, setActiveProfileInitialUser] = useState(null);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
   const postAuthorId = post?.userId || post?.user_id || post?.authorId;
+
+  const handleOpenProfile = (targetUser, explicitUserId = null) => {
+    const targetId =
+      explicitUserId ||
+      targetUser?.id ||
+      targetUser?.userId ||
+      targetUser?.user_id ||
+      targetUser?.authorId ||
+      postAuthorId;
+
+    if (!targetId) return;
+
+    setActiveProfileUserId(String(targetId));
+    setActiveProfileInitialUser(targetUser || null);
+    setIsProfileModalOpen(true);
+  };
+
+  const handleModalFollowToggle = (userId, newFollowingState) => {
+    if (String(userId) === String(postAuthorId)) {
+      setIsFollowing(newFollowingState);
+    }
+  };
 
   const isMyPost = Boolean(
     post?.isMyPost ||
@@ -715,6 +742,7 @@ export default function PostCard({
             followLoading={followLoading}
             onFollow={handleFollow}
             isMyPost={isMyPost}
+            onOpenProfile={handleOpenProfile}
           />
 
           {/* ==================================================
@@ -1239,7 +1267,15 @@ export default function PostCard({
                         "
                       >
                         <div
-                          className="
+                          onClick={() =>
+                            commentUserId &&
+                            handleOpenProfile(
+                              { username: authorName, id: commentUserId },
+                              commentUserId
+                            )
+                          }
+                          title={commentUserId ? `View ${authorName}'s profile` : undefined}
+                          className={`
                             w-8
                             h-8
                             rounded-xl
@@ -1253,7 +1289,13 @@ export default function PostCard({
                             text-[10px]
                             font-bold
                             shrink-0
-                          "
+                            select-none
+                            ${
+                              commentUserId
+                                ? "cursor-pointer hover:scale-105 transition-transform"
+                                : ""
+                            }
+                          `}
                         >
                           {authorInitial}
                         </div>
@@ -1276,11 +1318,24 @@ export default function PostCard({
                           >
                             <div className="flex items-center justify-between gap-2">
                               <p
-                                className="
+                                onClick={() =>
+                                  commentUserId &&
+                                  handleOpenProfile(
+                                    { username: authorName, id: commentUserId },
+                                    commentUserId
+                                  )
+                                }
+                                title={commentUserId ? `View ${authorName}'s profile` : undefined}
+                                className={`
                                   text-xs
                                   font-bold
                                   text-[#12221d]
-                                "
+                                  ${
+                                    commentUserId
+                                      ? "cursor-pointer hover:text-[#19714e] transition-colors"
+                                      : ""
+                                  }
+                                `}
                               >
                                 {authorName}
                               </p>
@@ -1631,6 +1686,23 @@ export default function PostCard({
 
         </div>
 
+      )}
+
+      {/* ======================================================
+          USER PROFILE MODAL
+      ====================================================== */}
+      {isProfileModalOpen && activeProfileUserId && (
+        <UserProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => {
+            setIsProfileModalOpen(false);
+            setActiveProfileUserId(null);
+            setActiveProfileInitialUser(null);
+          }}
+          userId={activeProfileUserId}
+          initialUser={activeProfileInitialUser}
+          onFollowToggle={handleModalFollowToggle}
+        />
       )}
 
     </>

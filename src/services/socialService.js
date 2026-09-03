@@ -29,6 +29,15 @@ const socialService = {
     );
   },
   // =====================================
+  // GET USER PROFILE
+  // =====================================
+
+  getProfile: (userId) =>
+    socialApi.get(
+      `/api/social/profiles/${userId}`
+    ),
+
+  // =====================================
   // GET HOME FEED
   // =====================================
 
@@ -98,7 +107,7 @@ const socialService = {
   getUserPosts: (
     userId,
     page = 0,
-    size = 50
+    size = 10
   ) =>
     socialApi.get(
       `/api/social/posts/user/${userId}?page=${page}&size=${size}`

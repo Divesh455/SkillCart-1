@@ -8,6 +8,7 @@ export default function UserHeader({
   followLoading = false,
   onFollow,
   isMyPost = false,
+  onOpenProfile = null,
 }) {
   const displayUsername = useMemo(() => {
     if (isMyPost) {
@@ -44,6 +45,12 @@ export default function UserHeader({
     ? new Date(createdAt).toLocaleString()
     : "";
 
+  const handleProfileClick = () => {
+    if (typeof onOpenProfile === "function") {
+      onOpenProfile(user);
+    }
+  };
+
   return (
     <div className="flex items-center gap-3 w-full">
 
@@ -52,7 +59,9 @@ export default function UserHeader({
       ===================================================== */}
 
       <div
-        className="
+        onClick={handleProfileClick}
+        title={onOpenProfile ? `View ${displayUsername}'s profile` : undefined}
+        className={`
           w-11
           h-11
           rounded-2xl
@@ -65,7 +74,14 @@ export default function UserHeader({
           justify-center
           font-bold
           shrink-0
-        "
+          transition-transform
+          select-none
+          ${
+            onOpenProfile
+              ? "cursor-pointer hover:scale-105 hover:shadow-md active:scale-95"
+              : ""
+          }
+        `}
       >
         {initial}
       </div>
@@ -74,15 +90,24 @@ export default function UserHeader({
           USER INFORMATION
       ===================================================== */}
 
-      <div className="flex-1 min-w-0">
+      <div
+        onClick={handleProfileClick}
+        className={`
+          flex-1 min-w-0
+          ${onOpenProfile ? "cursor-pointer group" : ""}
+        `}
+        title={onOpenProfile ? `View ${displayUsername}'s profile` : undefined}
+      >
 
         <p
-          className="
+          className={`
             text-sm
             font-bold
             text-[#10231b]
             truncate
-          "
+            transition-colors
+            ${onOpenProfile ? "group-hover:text-[#19714e]" : ""}
+          `}
         >
           {displayUsername}
         </p>

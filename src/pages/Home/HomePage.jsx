@@ -22,6 +22,7 @@ import CreatePostModal from "../../components/common/CreatePostModal";
 import Copilot from "../../components/common/Copilot";
 import ResumeAnalysisSection from "../../components/common/ResumeAnalysisSection";
 import PostCard from "../../components/common/PostCard";
+import UserProfileModal from "../../components/common/UserProfileModal";
 
 import socialService from "../../services/socialService";
 import jobService from "../../services/jobService";
@@ -341,6 +342,10 @@ export default function HomePage() {
 
   const [showProfile, setShowProfile] =
     useState(false);
+
+  const [selectedOtherUserId, setSelectedOtherUserId] = useState(null);
+  const [selectedOtherUserInitial, setSelectedOtherUserInitial] = useState(null);
+  const [isOtherProfileOpen, setIsOtherProfileOpen] = useState(false);
 
   // ============================================================
   // USER STATS & MY POSTS
@@ -1757,11 +1762,19 @@ export default function HomePage() {
                         {/* USER */}
 
                         <div
+                          onClick={() => {
+                            setSelectedOtherUserId(person.id);
+                            setSelectedOtherUserInitial(person);
+                            setIsOtherProfileOpen(true);
+                          }}
+                          title={`View ${personName}'s profile`}
                           className="
                             flex
                             items-center
                             gap-2.5
                             min-w-0
+                            cursor-pointer
+                            group
                           "
                         >
 
@@ -1780,6 +1793,9 @@ export default function HomePage() {
                               font-bold
                               text-xs
                               shrink-0
+                              group-hover:scale-105
+                              transition-transform
+                              select-none
                             "
                           >
                             {personName
@@ -1802,6 +1818,8 @@ export default function HomePage() {
                                 font-bold
                                 text-[#12221d]
                                 truncate
+                                group-hover:text-[#19714e]
+                                transition-colors
                               "
                             >
                               {
@@ -2480,6 +2498,28 @@ export default function HomePage() {
           setIsCopilotOpen(false)
         }
       />
+
+      {/* ======================================================
+          OTHER USER PROFILE MODAL
+      ====================================================== */}
+      {isOtherProfileOpen && selectedOtherUserId && (
+        <UserProfileModal
+          isOpen={isOtherProfileOpen}
+          onClose={() => {
+            setIsOtherProfileOpen(false);
+            setSelectedOtherUserId(null);
+            setSelectedOtherUserInitial(null);
+          }}
+          userId={selectedOtherUserId}
+          initialUser={selectedOtherUserInitial}
+          onFollowToggle={(userId, newFollowingState) => {
+            setFollowingUsers((prev) => ({
+              ...prev,
+              [userId]: newFollowingState,
+            }));
+          }}
+        />
+      )}
 
     </div>
   );
