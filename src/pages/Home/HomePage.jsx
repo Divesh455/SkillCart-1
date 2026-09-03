@@ -23,6 +23,8 @@ import Copilot from "../../components/common/Copilot";
 import ResumeAnalysisSection from "../../components/common/ResumeAnalysisSection";
 import PostCard from "../../components/common/PostCard";
 import UserProfileModal from "../../components/common/UserProfileModal";
+import UserRowSkeleton from "../../components/common/UserRowSkeleton";
+import Skeleton from "../../components/ui/Skeleton";
 
 import socialService from "../../services/socialService";
 import jobService from "../../services/jobService";
@@ -346,6 +348,7 @@ export default function HomePage() {
   const [showProfile, setShowProfile] =
     useState(false);
 
+  const [profileInitialTab, setProfileInitialTab] = useState("posts");
   const [selectedOtherUserId, setSelectedOtherUserId] = useState(null);
   const [selectedOtherUserInitial, setSelectedOtherUserInitial] = useState(null);
   const [isOtherProfileOpen, setIsOtherProfileOpen] = useState(false);
@@ -899,23 +902,44 @@ export default function HomePage() {
                 <div className="mt-3.5 grid grid-cols-3 gap-2 text-center p-2 bg-[#f7faf8] rounded-2xl border border-[#dfe7e2]">
                   <div
                     className="cursor-pointer hover:bg-white p-1 rounded-xl transition-colors"
-                    onClick={() => setShowProfile(true)}
+                    onClick={() => {
+                      setProfileInitialTab("posts");
+                      setShowProfile(true);
+                    }}
                   >
-                    <p className="text-xs font-extrabold text-[#123c2c]">{userStats.postsCount}</p>
+                    {loadingUserStats && userStats.postsCount === 0 ? (
+                      <Skeleton variant="text" className="h-4 w-6 mx-auto mb-1" />
+                    ) : (
+                      <p className="text-xs font-extrabold text-[#123c2c]">{userStats.postsCount}</p>
+                    )}
                     <p className="text-[9px] font-semibold text-[#68756f] uppercase">Posts</p>
                   </div>
                   <div
                     className="cursor-pointer hover:bg-white p-1 rounded-xl transition-colors"
-                    onClick={() => setShowProfile(true)}
+                    onClick={() => {
+                      setProfileInitialTab("followers");
+                      setShowProfile(true);
+                    }}
                   >
-                    <p className="text-xs font-extrabold text-[#123c2c]">{userStats.followersCount}</p>
+                    {loadingUserStats && userStats.followersCount === 0 ? (
+                      <Skeleton variant="text" className="h-4 w-6 mx-auto mb-1" />
+                    ) : (
+                      <p className="text-xs font-extrabold text-[#123c2c]">{userStats.followersCount}</p>
+                    )}
                     <p className="text-[9px] font-semibold text-[#68756f] uppercase">Followers</p>
                   </div>
                   <div
                     className="cursor-pointer hover:bg-white p-1 rounded-xl transition-colors"
-                    onClick={() => setShowProfile(true)}
+                    onClick={() => {
+                      setProfileInitialTab("following");
+                      setShowProfile(true);
+                    }}
                   >
-                    <p className="text-xs font-extrabold text-[#123c2c]">{userStats.followingCount}</p>
+                    {loadingUserStats && userStats.followingCount === 0 ? (
+                      <Skeleton variant="text" className="h-4 w-6 mx-auto mb-1" />
+                    ) : (
+                      <p className="text-xs font-extrabold text-[#123c2c]">{userStats.followingCount}</p>
+                    )}
                     <p className="text-[9px] font-semibold text-[#68756f] uppercase">Following</p>
                   </div>
                 </div>
@@ -1687,21 +1711,10 @@ export default function HomePage() {
 
 
               {/* LOADING */}
-
               {loadingUsers && (
-
-                <div
-                  className="
-                    py-5
-                    text-center
-                    text-xs
-                    text-[#68756f]
-                    animate-pulse
-                  "
-                >
-                  Loading people...
+                <div className="py-2">
+                  <UserRowSkeleton count={4} compact={true} />
                 </div>
-
               )}
 
 
@@ -2314,160 +2327,17 @@ export default function HomePage() {
       )}
 
       {/* ======================================================
-          FULL PROFILE DETAILS MODAL WITH USER'S POSTS
+          CURRENT USER FULL PROFILE MODAL (WITH POSTS & FOLLOWERS)
       ====================================================== */}
-
-      <AnimatePresence>
-        {showProfile && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white border border-[#dfe7e2] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative scrollbar-thin"
-            >
-              {/* COVER BANNER */}
-              <div className="h-32 bg-gradient-to-r from-[#123c2c] via-[#19714e] to-teal-600 relative">
-                <button
-                  type="button"
-                  onClick={() => setShowProfile(false)}
-                  className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors cursor-pointer"
-                  title="Close profile"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* PROFILE HEADER & STATS */}
-              <div className="px-6 pb-6 relative">
-                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 mb-4">
-                  <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#123c2c] to-[#19714e] text-[#b9ef84] border-4 border-white font-bold text-3xl flex items-center justify-center shadow-lg font-['Space_Grotesk']">
-                    {avatarText}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-xl font-bold text-[#12221d] font-['Space_Grotesk'] truncate">
-                      {parsedName}
-                    </h2>
-                    <p className="text-xs font-medium text-[#68756f]">@{username}</p>
-                  </div>
-                </div>
-
-                {/* STATS METRIC CARDS */}
-                <div className="grid grid-cols-3 gap-3 my-5">
-                  <div className="p-3.5 rounded-2xl bg-[#f7faf8] border border-[#dfe7e2] text-center">
-                    <p className="text-xl font-extrabold text-[#123c2c] font-['Space_Grotesk']">
-                      {userStats.postsCount}
-                    </p>
-                    <p className="text-[10px] font-bold text-[#68756f] uppercase tracking-wider mt-0.5">
-                      Total Posts
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-[#f7faf8] border border-[#dfe7e2] text-center">
-                    <p className="text-xl font-extrabold text-[#123c2c] font-['Space_Grotesk']">
-                      {userStats.followersCount}
-                    </p>
-                    <p className="text-[10px] font-bold text-[#68756f] uppercase tracking-wider mt-0.5">
-                      Followers
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-2xl bg-[#f7faf8] border border-[#dfe7e2] text-center">
-                    <p className="text-xl font-extrabold text-[#123c2c] font-['Space_Grotesk']">
-                      {userStats.followingCount}
-                    </p>
-                    <p className="text-[10px] font-bold text-[#68756f] uppercase tracking-wider mt-0.5">
-                      Following
-                    </p>
-                  </div>
-                </div>
-
-                {/* CONTACT & PORTFOLIO */}
-                {(linkedinUrl || portfolioUrl) && (
-                  <div className="flex flex-wrap gap-2.5 mb-4">
-                    {linkedinUrl && (
-                      <a
-                        href={linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#dff8eb] text-[#19714e] text-xs font-semibold hover:bg-[#19714e] hover:text-white transition-all shadow-2xs"
-                      >
-                        <ExternalLink size={14} />
-                        LinkedIn Profile
-                      </a>
-                    )}
-                    {portfolioUrl && (
-                      <a
-                        href={portfolioUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#dff8eb] text-[#19714e] text-xs font-semibold hover:bg-[#19714e] hover:text-white transition-all shadow-2xs"
-                      >
-                        <Globe size={14} />
-                        Portfolio Website
-                      </a>
-                    )}
-                  </div>
-                )}
-
-                {/* SKILLS */}
-                {parsedSkills.length > 0 && (
-                  <div className="mb-6">
-                    <p className="text-[11px] uppercase tracking-wider font-bold text-[#68756f] mb-2 flex items-center gap-1.5">
-                      <Code2 size={14} className="text-[#19714e]" /> Your Skills
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {parsedSkills.map((skill, index) => (
-                        <span
-                          key={`${skill}-${index}`}
-                          className="text-[11px] font-semibold bg-[#f7faf8] text-[#123c2c] border border-[#dfe7e2] px-3 py-1 rounded-xl"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* USER'S CREATED POSTS */}
-                <div className="border-t border-[#dfe7e2] pt-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-bold text-[#12221d] flex items-center gap-2 font-['Space_Grotesk']">
-                      <span>Your Posts</span>
-                      <span className="px-2.5 py-0.5 text-xs rounded-full bg-[#123c2c] text-[#b9ef84] font-bold">
-                        {myPostsList.length}
-                      </span>
-                    </h3>
-                    {loadingUserStats && (
-                      <span className="text-xs text-[#68756f] flex items-center gap-1">
-                        <Loader2 size={14} className="animate-spin text-[#19714e]" /> Updating...
-                      </span>
-                    )}
-                  </div>
-
-                  {myPostsList.length === 0 ? (
-                    <div className="py-10 text-center bg-[#f7faf8] rounded-2xl border border-dashed border-[#dfe7e2] p-4">
-                      <p className="text-xs font-semibold text-[#68756f]">
-                        You haven't created any posts yet.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {myPostsList.map((post) => (
-                        <PostCard
-                          key={post.id || post._id || Math.random()}
-                          post={{ ...post, isMyPost: true }}
-                          onPostDeleted={handleMyPostDeleted}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {showProfile && currentUserId && (
+        <UserProfileModal
+          isOpen={showProfile}
+          onClose={() => setShowProfile(false)}
+          userId={currentUserId}
+          initialUser={{ username, name: parsedName }}
+          initialTab={profileInitialTab}
+        />
+      )}
 
 
       {/* ======================================================

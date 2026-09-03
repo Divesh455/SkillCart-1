@@ -159,10 +159,14 @@ const socialApi = {
       {
         method: "POST",
 
-        body:
-          body instanceof FormData
-            ? body
-            : JSON.stringify(body),
+        ...(body !== undefined
+          ? {
+              body:
+                body instanceof FormData
+                  ? body
+                  : JSON.stringify(body),
+            }
+          : {}),
 
         ...options,
       }

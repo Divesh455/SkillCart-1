@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { RefreshCw, Loader2, Globe, Users } from "lucide-react";
 import socialService from "../../services/socialService";
 import PostCard from "./PostCard";
+import PostCardSkeleton from "./PostCardSkeleton";
 
 function getUserIdFromToken() {
   try {
@@ -49,6 +50,10 @@ export default function Feed({ newPost }) {
   const [error, setError] = useState("");
 
   const handleTabChange = (newTab) => {
+    if (newTab === activeTab) return;
+    setLoading(true);
+    setPosts([]);
+    setError("");
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (newTab === "all") {
@@ -226,23 +231,9 @@ export default function Feed({ newPost }) {
       </div>
 
       {/* LOADING SKELETON */}
-      {loading && posts.length === 0 && (
+      {loading && (
         <div className="space-y-4">
-          {[1, 2, 3].map((item) => (
-            <div
-              key={item}
-              className="bg-white border border-[#dfe7e2] rounded-3xl p-5 animate-pulse"
-            >
-              <div className="flex gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#dfe7e2]" />
-                <div className="flex-1">
-                  <div className="h-3 bg-[#dfe7e2] rounded w-1/3" />
-                  <div className="h-3 bg-[#dfe7e2] rounded w-1/4 mt-2" />
-                </div>
-              </div>
-              <div className="h-16 bg-[#dfe7e2] rounded-2xl mt-5" />
-            </div>
-          ))}
+          <PostCardSkeleton count={3} />
         </div>
       )}
 
@@ -285,7 +276,7 @@ export default function Feed({ newPost }) {
       )}
 
       {/* POSTS LIST */}
-      {posts.map((post) => (
+      {!loading && posts.map((post) => (
         <PostCard
           key={post.id || post._id}
           post={post}

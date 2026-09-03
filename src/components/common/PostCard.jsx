@@ -17,6 +17,7 @@ import {
 import socialService from "../../services/socialService";
 import UserHeader from "./UserHeader";
 import UserProfileModal from "./UserProfileModal";
+import CommentSkeleton from "./CommentSkeleton";
 
 // ============================================================
 // GET CURRENT USER ID FROM JWT
@@ -1158,28 +1159,7 @@ export default function PostCard({
 
               {commentsLoading &&
               comments.length === 0 ? (
-
-                <div
-                  className="
-                    py-6
-                    flex
-                    items-center
-                    justify-center
-                    gap-2
-                    text-xs
-                    text-[#68756f]
-                  "
-                >
-
-                  <Loader2
-                    size={15}
-                    className="animate-spin"
-                  />
-
-                  Loading comments...
-
-                </div>
-
+                <CommentSkeleton count={2} />
               ) : comments.length === 0 ? (
 
                 <div
