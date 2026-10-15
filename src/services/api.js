@@ -26,7 +26,9 @@ const request = async (
 
   const isPublicAuthRoute =
     endpoint.includes("/auth/login") ||
-    endpoint.includes("/auth/register");
+    endpoint.includes("/auth/register") ||
+    endpoint.includes("/auth/send/otp") ||
+    endpoint.includes("/auth/verify-otp");
 
   const headers = {
     "Content-Type":

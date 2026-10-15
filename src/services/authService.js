@@ -14,6 +14,18 @@ const authService = {
       payload
     ),
 
+  sendOtp: (payload) =>
+    api.post(
+      "/api/v1/auth/send/otp",
+      payload
+    ),
+
+  verifyOtp: (payload) =>
+    api.post(
+      "/api/v1/auth/verify-otp",
+      payload
+    ),
+
   logout: () =>
     api
       .post(
