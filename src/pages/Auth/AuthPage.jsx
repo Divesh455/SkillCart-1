@@ -465,7 +465,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7faf8] text-[#12221d] flex flex-col justify-between relative overflow-hidden font-sans selection:bg-[#dff8eb] selection:text-[#19714e]">
+    <div className="min-h-screen bg-[#f7faf8] text-[#12221d] flex flex-col justify-between relative overflow-x-hidden scrollbar-none font-sans selection:bg-[#dff8eb] selection:text-[#19714e]">
       {/* Floating Popup Notification Toast */}
       <AnimatePresence>
         {popup && (
@@ -474,10 +474,10 @@ export default function AuthPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -16, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none"
           >
             <div
-              className={`p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 pointer-events-auto backdrop-blur-md ${
+              className={`p-3.5 rounded-2xl shadow-xl border flex items-center justify-between gap-3 pointer-events-auto backdrop-blur-md ${
                 popup.type === "success"
                   ? "bg-[#123c2c] text-white border-[#19714e]/40 shadow-[#123c2c]/20"
                   : "bg-red-900 text-white border-red-700/50 shadow-red-950/30"
@@ -485,16 +485,16 @@ export default function AuthPage() {
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
                     popup.type === "success"
                       ? "bg-[#b9ef84] text-[#123c2c]"
                       : "bg-red-500 text-white"
                   }`}
                 >
                   {popup.type === "success" ? (
-                    <CheckCircle2 size={18} strokeWidth={2.5} />
+                    <CheckCircle2 size={16} strokeWidth={2.5} />
                   ) : (
-                    <AlertCircle size={18} strokeWidth={2.5} />
+                    <AlertCircle size={16} strokeWidth={2.5} />
                   )}
                 </div>
                 <div className="text-xs font-medium leading-relaxed">{popup.message}</div>
@@ -505,7 +505,7 @@ export default function AuthPage() {
                 className="text-white/60 hover:text-white transition-colors p-1 rounded-md shrink-0 cursor-pointer"
                 aria-label="Close notification"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
           </motion.div>
@@ -517,7 +517,7 @@ export default function AuthPage() {
       <div className="absolute top-1/2 -right-40 w-[30rem] h-[30rem] bg-[#b9ef84]/20 rounded-full blur-3xl opacity-50 pointer-events-none" />
 
       {/* Top Navbar */}
-      <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between z-10">
+      <header className="w-full max-w-7xl mx-auto px-5 py-3 sm:py-4 flex items-center justify-between z-10 shrink-0">
         <Logo />
         <Link
           to="/"
@@ -528,70 +528,70 @@ export default function AuthPage() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 flex items-center justify-center px-4 py-8 z-10">
-        <div className="w-full max-w-4xl bg-white border border-[#dfe7e2] shadow-xl shadow-[#123c2c]/5 rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[580px]">
+      <main className="flex-1 flex items-center justify-center px-4 py-2 sm:py-4 z-10">
+        <div className="w-full max-w-4xl bg-white border border-[#dfe7e2] shadow-xl shadow-[#123c2c]/5 rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-0 md:min-h-[520px]">
           
           {/* Left Branding Column (Visible on md+) */}
-          <div className="hidden md:flex md:col-span-5 bg-[#123c2c] text-white p-8 md:p-10 flex-col justify-between relative overflow-hidden">
+          <div className="hidden md:flex md:col-span-5 bg-[#123c2c] text-white p-6 lg:p-8 flex-col justify-between relative overflow-hidden">
             {/* Ambient inner glow */}
             <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#b9ef84]/15 rounded-full blur-2xl pointer-events-none" />
             <div className="absolute -top-20 -left-20 w-64 h-64 bg-[#19714e]/40 rounded-full blur-2xl pointer-events-none" />
 
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#b9ef84] text-xs font-medium backdrop-blur-xs mb-6 border border-white/10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-[#b9ef84] text-xs font-medium backdrop-blur-xs mb-4 border border-white/10">
                 <Sparkles size={14} /> AI Career Copilot
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold font-['Space_Grotesk'] leading-tight tracking-tight text-white mb-4">
+              <h2 className="text-2xl lg:text-3xl font-bold font-['Space_Grotesk'] leading-tight tracking-tight text-white mb-3">
                 Make your next move <span className="text-[#b9ef84] italic">remarkable.</span>
               </h2>
-              <p className="text-white/75 text-sm leading-relaxed mb-8">
+              <p className="text-white/75 text-xs sm:text-sm leading-relaxed mb-4">
                 Join thousands of ambitious professionals using AI tools to analyze resumes, optimize applications, and ace interviews.
               </p>
             </div>
 
             {/* Feature Highlights */}
-            <div className="relative z-10 space-y-3.5 my-auto py-4 border-y border-white/10">
-              <div className="flex items-center gap-3 text-xs text-white/90 font-medium">
-                <div className="w-6 h-6 rounded-lg bg-[#b9ef84]/20 text-[#b9ef84] flex items-center justify-center shrink-0">
-                  <CheckCircle2 size={14} />
+            <div className="relative z-10 space-y-2.5 my-auto py-3 border-y border-white/10">
+              <div className="flex items-center gap-2.5 text-xs text-white/90 font-medium">
+                <div className="w-5.5 h-5.5 rounded-lg bg-[#b9ef84]/20 text-[#b9ef84] flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={13} />
                 </div>
                 <span>ATS Resume Parsing & Score Checker</span>
               </div>
-              <div className="flex items-center gap-3 text-xs text-white/90 font-medium">
-                <div className="w-6 h-6 rounded-lg bg-[#b9ef84]/20 text-[#b9ef84] flex items-center justify-center shrink-0">
-                  <Zap size={14} />
+              <div className="flex items-center gap-2.5 text-xs text-white/90 font-medium">
+                <div className="w-5.5 h-5.5 rounded-lg bg-[#b9ef84]/20 text-[#b9ef84] flex items-center justify-center shrink-0">
+                  <Zap size={13} />
                 </div>
                 <span>Smart Match Confidence Engine</span>
               </div>
-              <div className="flex items-center gap-3 text-xs text-white/90 font-medium">
-                <div className="w-6 h-6 rounded-lg bg-[#b9ef84]/20 text-[#b9ef84] flex items-center justify-center shrink-0">
-                  <ShieldCheck size={14} />
+              <div className="flex items-center gap-2.5 text-xs text-white/90 font-medium">
+                <div className="w-5.5 h-5.5 rounded-lg bg-[#b9ef84]/20 text-[#b9ef84] flex items-center justify-center shrink-0">
+                  <ShieldCheck size={13} />
                 </div>
                 <span>AI Interview Practice & Feedback</span>
               </div>
             </div>
 
             {/* Bottom Proof */}
-            <div className="relative z-10 pt-4 flex items-center gap-3 text-xs text-white/70">
+            <div className="relative z-10 pt-3 flex items-center gap-3 text-xs text-white/70">
               <div className="flex -space-x-2">
-                <span className="w-7 h-7 rounded-full bg-[#19714e] border-2 border-[#123c2c] flex items-center justify-center text-[10px] font-bold text-white">SR</span>
-                <span className="w-7 h-7 rounded-full bg-[#b9ef84] border-2 border-[#123c2c] flex items-center justify-center text-[10px] font-bold text-[#123c2c]">DC</span>
-                <span className="w-7 h-7 rounded-full bg-white/20 border-2 border-[#123c2c] flex items-center justify-center text-[10px] font-bold text-white">+</span>
+                <span className="w-6.5 h-6.5 rounded-full bg-[#19714e] border-2 border-[#123c2c] flex items-center justify-center text-[9px] font-bold text-white">SR</span>
+                <span className="w-6.5 h-6.5 rounded-full bg-[#b9ef84] border-2 border-[#123c2c] flex items-center justify-center text-[9px] font-bold text-[#123c2c]">DC</span>
+                <span className="w-6.5 h-6.5 rounded-full bg-white/20 border-2 border-[#123c2c] flex items-center justify-center text-[9px] font-bold text-white">+</span>
               </div>
-              <span>12,000+ career moves made</span>
+              <span className="text-[11px]">12,000+ career moves made</span>
             </div>
           </div>
 
           {/* Right Form Column */}
-          <div className="col-span-1 md:col-span-7 p-6 sm:p-10 flex flex-col justify-center bg-white">
+          <div className="col-span-1 md:col-span-7 p-5 sm:p-7 md:p-8 flex flex-col justify-center bg-white">
             
             {/* Top Toggle Pills */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center justify-between mb-4 sm:mb-5">
               <div className="bg-[#f7faf8] p-1 rounded-xl border border-[#dfe7e2] flex gap-1">
                 <button
                   type="button"
                   onClick={() => handleToggleMode(true)}
-                  className={`px-5 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                  className={`px-4 py-1 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
                     isLogin
                       ? "bg-white text-[#123c2c] shadow-xs"
                       : "text-[#68756f] hover:text-[#12221d]"
@@ -602,7 +602,7 @@ export default function AuthPage() {
                 <button
                   type="button"
                   onClick={() => handleToggleMode(false)}
-                  className={`px-5 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                  className={`px-4 py-1 text-xs font-semibold rounded-lg transition-all duration-200 cursor-pointer ${
                     !isLogin
                       ? "bg-white text-[#123c2c] shadow-xs"
                       : "text-[#68756f] hover:text-[#12221d]"
@@ -616,7 +616,7 @@ export default function AuthPage() {
                 {isLogin ? "New here?" : "Have an account?"}{" "}
                 <button
                   onClick={() => handleToggleMode(!isLogin)}
-                  className="font-semibold text-[#19714e] hover:underline"
+                  className="font-semibold text-[#19714e] hover:underline cursor-pointer"
                 >
                   {isLogin ? "Sign up" : "Sign in"}
                 </button>
@@ -624,11 +624,11 @@ export default function AuthPage() {
             </div>
 
             {/* Title & Subtitle */}
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
+            <div className="mb-4">
+              <h1 className="text-xl sm:text-2xl font-bold font-['Space_Grotesk'] text-[#12221d] tracking-tight">
                 {isLogin ? "Welcome back" : "Create an account"}
               </h1>
-              <p className="text-xs text-[#68756f] mt-1">
+              <p className="text-xs text-[#68756f] mt-0.5">
                 {isLogin
                   ? "Enter your credentials to access your workspace."
                   : "Start building your AI-enhanced profile today."}
@@ -987,7 +987,7 @@ export default function AuthPage() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-6 py-4 text-center text-xs text-[#68756f] z-10">
+      <footer className="w-full max-w-7xl mx-auto px-6 py-2.5 text-center text-[11px] text-[#68756f] z-10 shrink-0">
         © 2026 SkillCart, Inc. All rights reserved.
       </footer>
     </div>

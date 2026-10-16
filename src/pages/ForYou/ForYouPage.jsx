@@ -504,7 +504,7 @@ export default function ForYouPage() {
   // ==========================================================
 
   return (
-    <div className="min-h-screen bg-[#0e1d18] text-[#12221d] font-sans relative overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-[#0e1d18] text-[#12221d] font-sans relative overflow-hidden flex flex-col scrollbar-none">
 
       {/* ====================================================
           BACKGROUND
@@ -759,9 +759,7 @@ export default function ForYouPage() {
                     </motion.div>
 
                     {/* Card stack */}
-
-                    <div className="relative w-full max-w-md h-[440px] xs:h-[480px] sm:h-[550px] my-auto">
-
+                    <div className="relative w-full max-w-md h-[410px] xs:h-[450px] sm:h-[480px] md:h-[500px] my-auto">
                       <AnimatePresence mode="popLayout">
 
                         {jobs

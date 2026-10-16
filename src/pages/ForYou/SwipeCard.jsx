@@ -333,13 +333,13 @@ export default function SwipeCard({
       {/* ------------------------------------------------------------------ */}
       <div
         onClick={() => isFront && onClickCard(job)}
-        className="p-5 sm:p-7 flex-1 flex flex-col justify-between cursor-pointer"
+        className="p-4 sm:p-5 flex-1 flex flex-col justify-between cursor-pointer overflow-hidden"
       >
         {/* Top Header: AI Match Badge & Work Mode */}
         <div>
-          <div className="flex items-center justify-between gap-2 mb-3.5">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dff8eb] text-[#19714e] text-xs font-extrabold border border-[#19714e]/20 shadow-2xs">
-              <Sparkles size={13} className="text-[#19714e] animate-pulse" />
+          <div className="flex items-center justify-between gap-2 mb-2.5">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#dff8eb] text-[#19714e] text-[11px] font-extrabold border border-[#19714e]/20 shadow-2xs">
+              <Sparkles size={12} className="text-[#19714e] animate-pulse" />
               <span>
                 {matchScorePercent !== null
                   ? `${matchScorePercent}% AI Match`
@@ -381,22 +381,22 @@ export default function SwipeCard({
           </div>
 
           {/* Location, Job Type & Salary Badges */}
-          <div className="flex flex-wrap items-center gap-1.5 mb-4 text-xs font-medium">
+          <div className="flex flex-wrap items-center gap-1.5 mb-2.5 text-xs font-medium">
             {location && (
-              <div className="flex items-center gap-1.5 text-[#52615a] bg-[#f7faf8] px-2.5 py-1 rounded-xl border border-[#dfe7e2]">
-                <MapPin size={13} className="text-[#19714e]" />
-                <span className="truncate max-w-[140px] text-[11px] font-semibold">{location}</span>
+              <div className="flex items-center gap-1.5 text-[#52615a] bg-[#f7faf8] px-2 py-0.5 rounded-xl border border-[#dfe7e2]">
+                <MapPin size={12} className="text-[#19714e]" />
+                <span className="truncate max-w-[130px] text-[10px] font-semibold">{location}</span>
               </div>
             )}
             {jobType && (
-              <div className="flex items-center gap-1.5 text-[#52615a] bg-[#f7faf8] px-2.5 py-1 rounded-xl border border-[#dfe7e2]">
-                <Briefcase size={13} className="text-[#19714e]" />
-                <span className="text-[11px] font-semibold">{jobType}</span>
+              <div className="flex items-center gap-1.5 text-[#52615a] bg-[#f7faf8] px-2 py-0.5 rounded-xl border border-[#dfe7e2]">
+                <Briefcase size={12} className="text-[#19714e]" />
+                <span className="text-[10px] font-semibold">{jobType}</span>
               </div>
             )}
             {salaryStr ? (
-              <div className="flex items-center gap-1.5 text-[#19714e] font-bold bg-[#dff8eb]/80 px-2.5 py-1 rounded-xl border border-[#19714e]/20 font-mono text-xs">
-                {isUsd ? <DollarSign size={13} /> : <IndianRupee size={13} />}
+              <div className="flex items-center gap-1 text-[#19714e] font-bold bg-[#dff8eb]/80 px-2 py-0.5 rounded-xl border border-[#19714e]/20 font-mono text-[11px]">
+                {isUsd ? <DollarSign size={12} /> : <IndianRupee size={12} />}
                 <span>{salaryStr}</span>
               </div>
             ) : null}
@@ -404,7 +404,7 @@ export default function SwipeCard({
 
           {/* Required Skills Badges (dynamically rendered, only when present) */}
           {skillsList.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-4">
+            <div className="flex flex-wrap gap-1 mb-2.5">
               {skillsList.map((skill, idx) => (
                 <span
                   key={idx}
@@ -418,15 +418,15 @@ export default function SwipeCard({
           )}
 
           {/* Key Job Info */}
-          <div className="space-y-2 pt-3 border-t border-[#dfe7e2]/80">
+          <div className="space-y-1.5 pt-2 border-t border-[#dfe7e2]/80">
             {experience && (
-              <div className="flex items-center justify-between text-xs text-[#68756f]">
+              <div className="flex items-center justify-between text-[11px] text-[#68756f]">
                 <span>Experience Level:</span>
                 <span className="font-bold text-[#12221d]">{experience}</span>
               </div>
             )}
             {department && (
-              <div className="flex items-center justify-between text-xs text-[#68756f]">
+              <div className="flex items-center justify-between text-[11px] text-[#68756f]">
                 <span>Department:</span>
                 <span className="font-bold text-[#12221d] truncate max-w-[180px]">
                   {department}
@@ -437,11 +437,11 @@ export default function SwipeCard({
         </div>
 
         {/* Click to view detail callout */}
-        <div className="pt-3 flex items-center justify-between text-xs font-bold text-[#19714e] border-t border-[#dfe7e2]/60 hover:underline">
+        <div className="pt-2 flex items-center justify-between text-xs font-bold text-[#19714e] border-t border-[#dfe7e2]/60 hover:underline">
           <span className="flex items-center gap-1.5">
-            <Info size={14} /> Tap card for full details
+            <Info size={13} /> Tap card for full details
           </span>
-          <ChevronRight size={15} />
+          <ChevronRight size={14} />
         </div>
       </div>
 
@@ -449,7 +449,7 @@ export default function SwipeCard({
       {/* FRONT CARD SWIPE ACTION BUTTONS */}
       {/* ------------------------------------------------------------------ */}
       {isFront && (
-        <div className="p-3.5 sm:p-4 bg-[#f7faf8] border-t border-[#dfe7e2] flex items-center justify-around gap-3 z-20">
+        <div className="p-2.5 sm:p-3 bg-[#f7faf8] border-t border-[#dfe7e2] flex items-center justify-around gap-3 z-20 shrink-0">
           {/* REJECT BUTTON (LEFT SWIPE) */}
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -457,9 +457,9 @@ export default function SwipeCard({
             type="button"
             onClick={(e) => handleActionButton("left", e)}
             title="Reject Job (Swipe Left)"
-            className="w-12 h-12 rounded-2xl bg-white border-2 border-rose-200 text-rose-500 hover:bg-rose-50 hover:border-rose-400 transition-all flex items-center justify-center shadow-sm cursor-pointer"
+            className="w-11 h-11 rounded-2xl bg-white border-2 border-rose-200 text-rose-500 hover:bg-rose-50 hover:border-rose-400 transition-all flex items-center justify-center shadow-sm cursor-pointer"
           >
-            <X size={22} strokeWidth={2.5} />
+            <X size={20} strokeWidth={2.5} />
           </motion.button>
 
           {/* DETAIL BUTTON */}
@@ -469,9 +469,9 @@ export default function SwipeCard({
             type="button"
             onClick={() => onClickCard(job)}
             title="View Full Details"
-            className="w-10 h-10 rounded-2xl bg-white border border-[#dfe7e2] text-[#19714e] hover:bg-[#dff8eb] transition-all flex items-center justify-center shadow-2xs cursor-pointer"
+            className="w-9 h-9 rounded-2xl bg-white border border-[#dfe7e2] text-[#19714e] hover:bg-[#dff8eb] transition-all flex items-center justify-center shadow-2xs cursor-pointer"
           >
-            <Info size={18} />
+            <Info size={16} />
           </motion.button>
 
           {/* SAVE BUTTON (RIGHT SWIPE) */}
@@ -481,9 +481,9 @@ export default function SwipeCard({
             type="button"
             onClick={(e) => handleActionButton("right", e)}
             title="Save Job (Swipe Right)"
-            className="w-12 h-12 rounded-2xl bg-[#123c2c] text-[#b9ef84] hover:bg-[#19714e] hover:text-white transition-all flex items-center justify-center shadow-md shadow-[#123c2c]/15 cursor-pointer"
+            className="w-11 h-11 rounded-2xl bg-[#123c2c] text-[#b9ef84] hover:bg-[#19714e] hover:text-white transition-all flex items-center justify-center shadow-md shadow-[#123c2c]/15 cursor-pointer"
           >
-            <Bookmark size={20} className="fill-current" />
+            <Bookmark size={18} className="fill-current" />
           </motion.button>
         </div>
       )}

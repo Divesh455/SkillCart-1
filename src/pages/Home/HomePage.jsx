@@ -690,6 +690,7 @@ export default function HomePage() {
         font-sans
         flex
         flex-col
+        scrollbar-none
         selection:bg-[#dff8eb]
         selection:text-[#19714e]
       "
