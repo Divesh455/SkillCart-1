@@ -17,6 +17,7 @@ import {
   RotateCw,
   Send,
   Edit3,
+  X,
 } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
@@ -48,13 +49,25 @@ export default function AuthPage() {
   const [otpSent, setOtpSent] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [otp, setOtp] = useState("");
-  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", ""]);
   const otpInputsRef = useRef([]);
   const [resendTimer, setResendTimer] = useState(0);
   const [otpError, setOtpError] = useState("");
   const [otpSuccess, setOtpSuccess] = useState("");
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
+
+  // Popup Toast Notification State
+  const [popup, setPopup] = useState(null); // { type: "success" | "error", message: string }
+  const popupTimeoutRef = useRef(null);
+
+  const showPopup = (type, message) => {
+    if (popupTimeoutRef.current) clearTimeout(popupTimeoutRef.current);
+    setPopup({ type, message });
+    popupTimeoutRef.current = setTimeout(() => {
+      setPopup(null);
+    }, 4500);
+  };
 
   // Countdown timer for re-sending OTP
   useEffect(() => {
@@ -78,11 +91,12 @@ export default function AuthPage() {
     setApiSuccess("");
     setOtpSent(false);
     setOtp("");
-    setOtpDigits(["", "", "", "", "", ""]);
+    setOtpDigits(["", "", "", "", ""]);
     setResendTimer(0);
     setOtpError("");
     setOtpSuccess("");
     setIsOtpVerified(false);
+    setPopup(null);
   };
 
   // Handle field change
@@ -152,9 +166,12 @@ export default function AuthPage() {
       setOtpSuccess(msg);
       setOtpSent(true);
       setOtp("");
-      setOtpDigits(["", "", "", "", "", ""]);
+      setOtpDigits(["", "", "", "", ""]);
       setResendTimer(45); // 45s resend cooldown
       setIsOtpVerified(false);
+
+      // Popup success notification on successful request
+      showPopup("success", msg);
 
       // Focus first digit box after OTP is sent
       setTimeout(() => {
@@ -164,8 +181,10 @@ export default function AuthPage() {
       const errMsg =
         err?.data?.message ||
         err?.message ||
-        "Failed to send OTP. Please check your email and try again.";
+        "Unable to send OTP request. Please check your connection and try again.";
       setOtpError(errMsg);
+      // Popup error notification if unable to complete request
+      showPopup("error", errMsg);
     } finally {
       setIsSendingOtp(false);
     }
@@ -174,7 +193,7 @@ export default function AuthPage() {
   // Auto-verify OTP handler
   const handleVerifyOtp = async (codeToVerify) => {
     const code = (codeToVerify || otpDigits.join("")).trim();
-    if (!code || code.length !== 6) return;
+    if (!code || code.length !== 5) return;
 
     setIsVerifyingOtp(true);
     setOtpError("");
@@ -197,22 +216,26 @@ export default function AuthPage() {
       if (isSuccess) {
         setIsOtpVerified(true);
         setOtpError("");
-        setOtpSuccess("OTP verified successfully! You can now create your account.");
+        const successMsg = "OTP verified successfully! You can now create your account.";
+        setOtpSuccess(successMsg);
+        showPopup("success", successMsg);
       } else {
         setIsOtpVerified(false);
         const errMsg =
           response?.message ||
           response?.msg ||
-          "Incorrect or invalid OTP. Please try again.";
+          "Invalid OTP. Please check the code and try again.";
         setOtpError(errMsg);
+        showPopup("error", errMsg);
       }
     } catch (err) {
       setIsOtpVerified(false);
       const errMsg =
         err?.data?.message ||
         err?.message ||
-        "Incorrect or invalid OTP. Please try again.";
+        "Invalid OTP. Please check the code and try again.";
       setOtpError(errMsg);
+      showPopup("error", errMsg);
     } finally {
       setIsVerifyingOtp(false);
     }
@@ -239,13 +262,13 @@ export default function AuthPage() {
     setOtp(fullCode);
     setOtpError("");
 
-    // Auto-advance to next box
-    if (index < 5) {
+    // Auto-advance to next box (for 5 digits: index 0 to 4)
+    if (index < 4) {
       otpInputsRef.current[index + 1]?.focus();
     }
 
-    // Auto verify if all 6 digits entered
-    if (fullCode.length === 6 && !newDigits.includes("")) {
+    // Auto verify if all 5 digits entered
+    if (fullCode.length === 5 && !newDigits.includes("")) {
       handleVerifyOtp(fullCode);
     }
   };
@@ -262,10 +285,10 @@ export default function AuthPage() {
   // Paste full OTP handler
   const handleDigitPaste = (e) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 5);
     if (!pastedData) return;
 
-    const newDigits = ["", "", "", "", "", ""];
+    const newDigits = ["", "", "", "", ""];
     for (let i = 0; i < pastedData.length; i++) {
       newDigits[i] = pastedData[i];
     }
@@ -274,10 +297,10 @@ export default function AuthPage() {
     setOtp(fullCode);
     setOtpError("");
 
-    const targetIdx = Math.min(pastedData.length, 5);
+    const targetIdx = Math.min(pastedData.length, 4);
     otpInputsRef.current[targetIdx]?.focus();
 
-    if (fullCode.length === 6) {
+    if (fullCode.length === 5) {
       handleVerifyOtp(fullCode);
     }
   };
@@ -443,6 +466,52 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-[#f7faf8] text-[#12221d] flex flex-col justify-between relative overflow-hidden font-sans selection:bg-[#dff8eb] selection:text-[#19714e]">
+      {/* Floating Popup Notification Toast */}
+      <AnimatePresence>
+        {popup && (
+          <motion.div
+            initial={{ opacity: 0, y: -24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.95 }}
+            transition={{ duration: 0.25 }}
+            className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none"
+          >
+            <div
+              className={`p-4 rounded-2xl shadow-xl border flex items-center justify-between gap-3 pointer-events-auto backdrop-blur-md ${
+                popup.type === "success"
+                  ? "bg-[#123c2c] text-white border-[#19714e]/40 shadow-[#123c2c]/20"
+                  : "bg-red-900 text-white border-red-700/50 shadow-red-950/30"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                    popup.type === "success"
+                      ? "bg-[#b9ef84] text-[#123c2c]"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {popup.type === "success" ? (
+                    <CheckCircle2 size={18} strokeWidth={2.5} />
+                  ) : (
+                    <AlertCircle size={18} strokeWidth={2.5} />
+                  )}
+                </div>
+                <div className="text-xs font-medium leading-relaxed">{popup.message}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPopup(null)}
+                className="text-white/60 hover:text-white transition-colors p-1 rounded-md shrink-0 cursor-pointer"
+                aria-label="Close notification"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Subtle Background Glows matching landing page */}
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#dff8eb] rounded-full blur-3xl opacity-60 pointer-events-none" />
       <div className="absolute top-1/2 -right-40 w-[30rem] h-[30rem] bg-[#b9ef84]/20 rounded-full blur-3xl opacity-50 pointer-events-none" />
@@ -733,7 +802,7 @@ export default function AuthPage() {
                           onClick={() => {
                             setOtpSent(false);
                             setOtp("");
-                            setOtpDigits(["", "", "", "", "", ""]);
+                            setOtpDigits(["", "", "", "", ""]);
                             setOtpError("");
                             setOtpSuccess("");
                           }}
@@ -770,8 +839,8 @@ export default function AuthPage() {
                         )}
                       </AnimatePresence>
 
-                      {/* 6 Digit Input Boxes */}
-                      <div className="flex items-center justify-between gap-1.5 sm:gap-2 pt-1" onPaste={handleDigitPaste}>
+                      {/* 5 Digit Input Boxes */}
+                      <div className="flex items-center justify-center gap-2.5 sm:gap-3.5 pt-1" onPaste={handleDigitPaste}>
                         {otpDigits.map((digit, index) => (
                           <input
                             key={index}
@@ -786,7 +855,7 @@ export default function AuthPage() {
                             onKeyDown={(e) => handleDigitKeyDown(index, e)}
                             disabled={isVerifyingOtp}
                             aria-label={`OTP Digit ${index + 1}`}
-                            className={`w-11 sm:w-12 h-12 sm:h-13 text-center text-lg sm:text-xl font-bold rounded-xl transition-all duration-200 outline-none shadow-xs ${
+                            className={`w-12 sm:w-14 h-12 sm:h-14 text-center text-lg sm:text-xl font-bold rounded-xl transition-all duration-200 outline-none shadow-xs ${
                               digit
                                 ? "border-[#19714e] bg-white text-[#123c2c] ring-2 ring-[#19714e]/20"
                                 : otpError
@@ -801,7 +870,7 @@ export default function AuthPage() {
                       <button
                         type="button"
                         onClick={() => handleVerifyOtp(otpDigits.join(""))}
-                        disabled={isVerifyingOtp || otpDigits.join("").length !== 6}
+                        disabled={isVerifyingOtp || otpDigits.join("").length !== 5}
                         className="w-full py-2.5 px-4 rounded-xl bg-[#123c2c] hover:bg-[#19714e] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs cursor-pointer"
                       >
                         {isVerifyingOtp ? (
